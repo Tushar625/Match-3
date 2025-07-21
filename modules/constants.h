@@ -1,0 +1,35 @@
+#pragma once
+
+
+
+#define WINDOW_WIDTH 1280
+
+#define WINDOW_HEIGHT 720
+
+#define VIRTUAL_WIDTH 512
+
+#define VIRTUAL_HEIGHT 288
+
+
+
+#define SMALL_FONT_SIZE 8
+
+#define MEDIUM_FONT_SIZE 16
+
+#define LARGE_FONT_SIZE 32
+
+
+#define BRICK_WIDTH 32
+
+#define BRICK_HEIGHT 32
+
+
+#define GRID_WIDTH 8
+
+#define GRID_HEIGHT 8
+
+
+
+enum TEXTURE_ENUM {MAIN, BACKGROUND, TEXTURE_COUNT};
+
+//enum SPRITE_ENUM {BLOCK, SPRITE_COUNT};
