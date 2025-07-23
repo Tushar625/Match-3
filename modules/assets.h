@@ -8,7 +8,7 @@ sf::Text small_text, medium_text, large_text;
 
 std::vector<sf::Texture> texture{ TEXTURE_COUNT };
 
-std::vector<std::vector<sf::Sprite>> brick_sprite;
+std::vector<sf::Sprite> brick_sprite;
 
 sf::Sprite bg_sprite;
 
@@ -41,6 +41,10 @@ public:
 
 		// loading the textures
 
+		//texture[MAIN]
+
+		//sf::Ve
+
 		if (!texture[MAIN].loadFromFile("image/match3.png"))
 		{
 			std::cout << "can't load match3.png\n";
@@ -55,7 +59,7 @@ public:
 
 		// creating the sprites
 
-		brick_sprite = get_bricks(texture[MAIN]);
+		brick_sprite = generateSpriteVector(texture[MAIN], BRICK_WIDTH, BRICK_HEIGHT);
 
 		bg_sprite.setTexture(texture[BACKGROUND]);
 

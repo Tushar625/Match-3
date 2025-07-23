@@ -24,6 +24,13 @@
 #define BRICK_HEIGHT 32
 
 
+#define BRICK_COLORS 18
+
+#define BRICK_TYPES 6
+
+
+
+
 #define GRID_WIDTH 8
 
 #define GRID_HEIGHT 8

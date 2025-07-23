@@ -1,38 +1,87 @@
 #pragma once
 
 
-// 8 x 8 matrix each cell is a brick
+/*
+	this class is used to manage an 8 x 8 grid of bricks, allowing for
+	selection, rendering, and swapping of the bricks in the game.
+*/
 
 class brickmap_class
 {
-	std::vector<sf::Sprite> bmap;
+
+
+	/*
+		brick_struct is a structure that represents a single brick in the grid.
+		it contains:
+			-color and type of the brick,
+			-its position on the screen
+
+		color and type are used to determine the index (color * BRICK_TYPES +
+		type) of the brick sprite from brick_sprite vector, which contains all
+		the brick sprites
+
+			-render() method is used to draw the brick at its position on the
+			screen.
+	*/
+	
+	struct brick_struct
+	{
+		int color, type;
+
+		sf::Vector2f pos;
+
+		void render() const noexcept
+		{
+			auto& brick = brick_sprite[color * BRICK_TYPES + type];
+			
+			brick.setPosition(pos);
+
+			bb::WINDOW.draw(brick);
+		}
+	};
+
+	std::vector<brick_struct> bmap;	// vector to store the brickmap
+
+
 
 	// pointer data
 
-	int point;
+	/*
+		points to a brick in the grid, it is used to select a brick in
+		the grid for swapping
+	*/
 
-	RoundedRectangle pointer;
+	int point;	// index of the brick pointed by pointer
+
+	RoundedRectangle pointer;	// to draw the pointer on the screen
+
+
 
 	// selection data
 
-	int selected;
+	/*
+		a pointed brick can be selected for swapping with another brick
+	*/
 
-	RoundedRectangle selecter;
+	int selected;	// index of the selected brick, -1 if no brick is selected
 
-	// tweening data
+	RoundedRectangle selecter;	// to draw the selecter on the screen, when a brick is selected
+
+
+
+	// tweener
 
 	TWEENER tween;
 
-	sf::Vector2f pos_p, pos_s;
-
-	int tween_selected;
 
 
 public:
 
-	brickmap_class() : bmap(GRID_WIDTH * GRID_HEIGHT), point(0), selected(-1)
+
+
+	brickmap_class() : point(0), selected(-1)	// initializing the pointer and selecter
 	{
-		// preparing the pointer
+		// preparing the pointer, an empty rounded rectangle
 
 		pointer.setSize(sf::Vector2f(BRICK_WIDTH, BRICK_HEIGHT));
 
@@ -46,7 +95,7 @@ public:
 
 		pointer.setCornerPointCount(12);
 
-		// preparing the selecter
+		// preparing the selecter, a translucent rounded rectangle
 
 		selecter.setSize(sf::Vector2f(BRICK_WIDTH, BRICK_HEIGHT));
 
@@ -57,10 +106,26 @@ public:
 		selecter.setCornerPointCount(12);
 	}
 
+
+
+	/*
+		generate_brickmap() creates a grid of bricks with random colors and types.
+
+		It fills the bmap vector with brick_struct objects, each representing a
+		brick in the grid.
+
+		offset is used to place the grid at a certain position on the screen
+	*/
+	
 	void generate_brickmap(sf::Vector2f offset)
 	{
 		int x, y;
 
+		// preparing the brickmap vector
+
+		bmap.clear();
+
+		bmap.reserve(GRID_WIDTH * GRID_HEIGHT);
 
 		// creating the grid of bricks
 
@@ -74,11 +139,15 @@ public:
 
 			for (int j = 0; j < GRID_WIDTH; j++)
 			{
-				// each brick
+				// placing each brick
 
-				bmap[i * GRID_WIDTH + j] = brick_sprite[rand() % brick_sprite.size()][rand() % brick_sprite[0].size()];
-
-				bmap[i * GRID_WIDTH + j].setPosition(sf::Vector2f(x, y) + offset);
+				bmap.push_back(
+					brick_struct(
+						rand() % BRICK_COLORS,
+						rand() % BRICK_TYPES,
+						sf::Vector2f(x, y) + offset
+					)
+				);
 
 				x += BRICK_WIDTH;	// placing NEXT brick
 			}
@@ -86,51 +155,53 @@ public:
 			y += BRICK_HEIGHT;	// GOING TO NEXT line of brick
 		}
 
-		// setting the pointer
+		// setting the pointer on the frst brick
 
-		pointer.setPosition(bmap[0].getPosition());
+		pointer.setPosition(bmap[0].pos);
 	}
 
 	void update()
 	{
+		// don't allow any input, when the tween thread is running
+
 		if (tween.is_running())
 			return;
 
 
-		// pointer up
+		// pointer up if pointer is not on the first row
 
 		if (point >= GRID_WIDTH && bb::INPUT.isPressed(sf::Keyboard::Scan::Up))
 		{
 			point -= GRID_WIDTH;
 
-			pointer.setPosition(bmap[point].getPosition());
+			pointer.setPosition(bmap[point].pos);
 		}
 
-		// pointer down
+		// pointer down if pointer is not on the last row
 
 		if (point <= (GRID_WIDTH * (GRID_HEIGHT - 1) - 1) && bb::INPUT.isPressed(sf::Keyboard::Scan::Down))
 		{
 			point += GRID_WIDTH;
 
-			pointer.setPosition(bmap[point].getPosition());
+			pointer.setPosition(bmap[point].pos);
 		}
 
-		// pointer left
+		// pointer left if pointer is not on the first column
 
 		if (point != 0 && bb::INPUT.isPressed(sf::Keyboard::Scan::Left))
 		{
 			point -= 1;
 
-			pointer.setPosition(bmap[point].getPosition());
+			pointer.setPosition(bmap[point].pos);
 		}
 
-		// pointer right
+		// pointer right if pointer is not on the last column
 
 		if (point != (GRID_WIDTH * GRID_HEIGHT - 1) && bb::INPUT.isPressed(sf::Keyboard::Scan::Right))
 		{
 			point += 1;
 
-			pointer.setPosition(bmap[point].getPosition());
+			pointer.setPosition(bmap[point].pos);
 		}
 
 
@@ -138,17 +209,17 @@ public:
 		{
 			if (selected == -1)
 			{
-				// nothing is selected currently
+				// nothing is selected currently so select the pointed brick
 
-				selecter.setPosition(bmap[point].getPosition());
+				selecter.setPosition(bmap[point].pos);
 
 				selected = point;
 			}
 			else
 			{
-				// a brick is already selected
+				// swapped the selected brick with the pointed brick
 
-				// swap bricks
+				// swap bricks in brickmap vector
 
 				auto temp = bmap[point];
 
@@ -156,11 +227,11 @@ public:
 
 				bmap[selected] = temp;
 
-				// swap positions with tween
+				// swap positions of the bricks on screen with tween animation
 
-				pos_p = bmap[point].getPosition();
+				auto& pos_p = bmap[point].pos;
 
-				pos_s = bmap[selected].getPosition();
+				auto& pos_s = bmap[selected].pos;
 
 				tween.start(.2,
 					twn_list(
@@ -172,38 +243,29 @@ public:
 
 				);
 
-				tween_selected = selected;
-
-				/*auto temp_pos = bmap[point].getPosition();
-
-				bmap[point].setPosition(bmap[selected].getPosition());
-
-				bmap[selected].setPosition(temp_pos);*/
-
-				selected = -1;
+				selected = -1;	// deselect the selected brick
 			}
 		}
 	}
 
 	void render()
 	{
-		if (tween.is_running())
-		{
-			tween.lock();
+		// safely access the data being tweened using lock() and unlock()
 
-			bmap[tween_selected].setPosition(pos_s);
-
-			bmap[point].setPosition(pos_p);
-
-			tween.unlock();
-		}
+		tween.lock();
 
 		for (const auto& brick : bmap)
 		{
-			bb::WINDOW.draw(brick);
+			brick.render();
 		}
 
+		tween.unlock();
+
+		// always draw the pointer on the selected brick
+
 		bb::WINDOW.draw(pointer);
+
+		// if a brick is selected, draw the selecter on it
 
 		if (selected > -1)
 		{
