@@ -306,7 +306,7 @@ struct TWN_TYPE
 
 template <typename TYPE>
 
-constexpr std::tuple<TYPE&, TYPE, TYPE, TWN_TYPE::func> twn(TYPE& data, TYPE end, TWN_TYPE::func ease = nullptr) noexcept
+auto twn(TYPE& data, TYPE end, TWN_TYPE::func ease = nullptr) noexcept
 {
 	// assuming that data is already initialized
 
@@ -326,7 +326,7 @@ constexpr std::tuple<TYPE&, TYPE, TYPE, TWN_TYPE::func> twn(TYPE& data, TYPE end
 
 template <typename TYPE>
 
-constexpr std::tuple<TYPE&, TYPE, TYPE, TWN_TYPE::func> twn(TYPE& data, TYPE start, TYPE end, TWN_TYPE::func ease = nullptr) noexcept
+auto twn(TYPE& data, TYPE start, TYPE end, TWN_TYPE::func ease = nullptr) noexcept
 {
 	data = start;	// initialize data with start
 
@@ -341,7 +341,371 @@ constexpr std::tuple<TYPE&, TYPE, TYPE, TWN_TYPE::func> twn(TYPE& data, TYPE sta
 
 template <typename... TYPE>
 
-constexpr std::tuple<TYPE...> twn_list(TYPE... twn_tuple) noexcept
+auto twn_list(TYPE... twn_tuple) noexcept
 {
 	return std::tuple<TYPE...>(twn_tuple...);
 }
+
+
+/*
+	Tollowing two classes are used to wrap around std::vector<T> and std::vector<T*>
+	so that we can perform element-wise arithmetic operations on two std::vector<T>
+	and assign resulting values to the variables pointed by the pointers in std::vector<T*>
+
+	This way I want to tween multiple values of same type at once and we don't have to
+	know the exact number of variables to tween at compile time
+*/
+
+
+/*
+	the TWEEN_VECTOR class is a wrapper around std::vector<T>, that allows for element-wise
+	arithmetic operations between two TWEEN_VECTOR objects or between a TWEEN_VECTOR and a
+	scalar value.
+*/
+
+template<typename T>
+
+class TWEEN_VECTOR
+{
+
+public:
+
+
+	std::vector<T> data;
+
+	
+	// Constructor
+
+	TWEEN_VECTOR() = default;
+
+	TWEEN_VECTOR(const std::vector<T>& vec) : data(vec) {}
+
+	
+	// Arithmetic operators (TWEEN_VECTOR op TWEEN_VECTOR) (element-wise)
+
+	TWEEN_VECTOR operator+(const TWEEN_VECTOR& other) const
+	{
+		return elementwise_op(other, std::plus<T>{});
+	}
+
+	TWEEN_VECTOR operator-(const TWEEN_VECTOR& other) const
+	{
+		return elementwise_op(other, std::minus<T>{});
+	}
+
+	TWEEN_VECTOR operator*(const TWEEN_VECTOR& other) const
+	{
+		return elementwise_op(other, std::multiplies<T>{});
+	}
+
+	TWEEN_VECTOR operator/(const TWEEN_VECTOR& other) const
+	{
+		return elementwise_op(other, std::divides<T>{});
+	}
+
+
+	// Arithmetic operators (TWEEN_VECTOR op value) (element-wise)
+	
+	TWEEN_VECTOR operator*(double value) const
+	{
+		return elementwise_op(value, std::multiplies<double>{});
+	}
+
+
+private:
+
+
+	/*
+		applies the element wise operations defined by the Op functor
+	*/
+
+
+	// between two tween_vectors
+	
+	template<typename Op>
+	
+	TWEEN_VECTOR elementwise_op(const TWEEN_VECTOR& other, Op op) const
+	{
+		if (data.size() != other.data.size())
+		{
+			throw std::invalid_argument("Vector sizes must match for arithmetic");
+		}
+
+		std::vector<T> result;
+
+		result.reserve(data.size());
+
+		for (size_t i = 0; i < data.size(); ++i)
+		{
+			result.push_back(op(data[i], other.data[i]));
+		}
+
+		return TWEEN_VECTOR(result);
+	}
+
+
+	// between TWEEN_VECTOR and a value
+
+	template<typename Op>
+
+	TWEEN_VECTOR elementwise_op(double value, Op op) const
+	{
+		std::vector<T> result;
+
+		result.reserve(data.size());
+
+		for (size_t i = 0; i < data.size(); ++i)
+		{
+			result.push_back(op((double)data[i], value));
+		}
+
+		return TWEEN_VECTOR(result);
+	}
+};
+
+
+/*
+	the TWEEN_VECTOR_PTR class is a wrapper around std::vector<T*>, that allows data
+	in TWEEN_VECTOR to be assigned to the variables pointed by the vector of pointers
+*/
+
+template <typename T>
+
+class TWEEN_VECTOR_PTR
+{
+
+public:
+
+
+	std::vector<T*> data;
+
+	// constructor
+
+	TWEEN_VECTOR_PTR() = default;
+
+	TWEEN_VECTOR_PTR(const std::vector<T*>& vec) : data(vec) {}
+
+	// Assignment from TWEEN_VECTOR<T>
+
+	/*
+		assigns the values in the vector of TWEEN_VECTOR<T> to the variables pointed
+		by the vector of pointers in TWEEN_VECTOR_PTR<T>
+	*/
+
+	void operator=(const TWEEN_VECTOR<T>& source) const
+	{
+		if (data.size() != source.data.size())
+		{
+			throw std::invalid_argument("Vector sizes must match for arithmetic");
+		}
+
+		for(unsigned long long i = 0; i < data.size(); i++)
+		{
+			*data[i] = source.data[i];
+		}
+	}
+};
+
+
+/*
+	following two functions are overloaded versions of twn() that take
+
+		- a vector of pointers, instead of a single reference
+		- a vector of values, instead of a single value, as start and end values
+		- an optional easing function as usual
+
+	their purpose is to allow tweening of multiple variables of same type at once
+
+	their working is logically similar to the single variable twn() functions
+
+	you can also use twn_list() to combine several of these twn() calls into a
+	single tuple, just like the twn() function for single variables
+
+	unlike the single variable twn() functions, you must mention the template argument
+	(i.e., type of the values) when calling these twn() functions
+
+	example:
+
+	twn<float>({ &x, &opac }, { 0, 0 }, { (float)WIDTH - texture.getSize().x, 255 });
+
+	twn<float>({ &x, &opac }, { (float)WIDTH - texture.getSize().x, 255 });
+
+	If only one vector values are passed, current values of the data pointed by pointers
+	are used as the initial values
+
+	note: ### (x_x) ###
+
+		twn<type>() actually takes vectors, make sure that the vectors you pass this function
+		is in the scope when start() is called (say, from a finish callback), otherwise disaster
+		will happen
+*/
+
+
+template <typename T>
+
+auto twn(const std::vector<T*>& data, const std::vector<T>& start, const std::vector<T>& end, TWN_TYPE::func ease = nullptr) noexcept
+{
+	// assuming that data is already initialized
+
+	if (!ease)
+	{
+		ease = TWN_TYPE::default_type;
+	}
+
+	return std::tuple<TWEEN_VECTOR_PTR<T>, TWEEN_VECTOR<T>, TWEEN_VECTOR<T>, TWN_TYPE::func>(
+		TWEEN_VECTOR_PTR<T>{ data }	/*pointers*/,
+		TWEEN_VECTOR<T>{ start }	/*initial value*/,
+		TWEEN_VECTOR<T>{ end }		/*end value*/,
+		ease						/*easing function*/
+	);
+}
+
+
+template <typename T>
+
+auto twn(const std::vector<T*>& data, const std::vector<T>& end, TWN_TYPE::func ease = nullptr) noexcept
+{
+	// assuming that data is already initialized
+
+	if (!ease)
+	{
+		ease = TWN_TYPE::default_type;
+	}
+
+	// Create a vector to hold the initial values
+
+	std::vector<T> start(data.size());
+
+	// store current values of pointers as initial values
+
+	for (size_t i = 0; i < data.size(); ++i)
+	{
+		start[i] = *data[i];
+	}
+
+	return twn(data, start, end, ease);
+}
+
+
+
+/*
+	this class is used to help with tweening multiple variables of same type at once
+
+	we do have 2 overloaded twn() functions (defined above) to take care of this but
+	they take vectors as arguments, which is not very easy to use
+
+	using MULTI_TWN<T> class, you can create an object, add tween information for multiple
+	variables of same type, and then call get_twn() to get a tuple (just like the one
+	generated by twn() overloads), which can be passed to TWEENER::start().
+	
+	you can set the easing function as well
+
+	note: ### (x_x) ###
+
+		this class creates vectors internally, make sure that object is in the scope when
+		start() is called (say, from a finish callback), otherwise disaster will happen.
+
+		Preferablly create it's object in global scope.
+
+	example:
+
+	MULTI_TWN<double> twn_vector;
+
+	{	
+		// setting several variables for tweening
+
+		twn_vector.set_twn(&data1, 0.0, 100.0);
+
+		twn_vector.set_twn(&data2, 0.0, 100.0);
+
+		twn_vector.get_twn();	// returns the tuple, an arg to tweener start() or twn_list()
+	}
+*/
+
+template <typename T>
+
+class MULTI_TWN
+{
+	std::vector<T*> pointer;	// vector of pointers to the variables to tween
+	
+	std::vector<T> start, end;	// initial and end values of the variables to tween
+	
+	TWN_TYPE::func ease;		// easing function to use for tweening
+
+
+public:
+
+
+	// Constructor
+
+	/*
+		initializes the easing function, and reserves space for the vectors
+	*/
+
+	MULTI_TWN(std::size_t size, TWN_TYPE::func _ease = nullptr) : ease(_ease ? _ease : TWN_TYPE::default_type)
+	{
+		reserve(size);
+	}
+
+	// initializes the easing function
+
+	MULTI_TWN(TWN_TYPE::func _ease = nullptr) : ease(_ease ? _ease : TWN_TYPE::default_type)
+	{}
+
+
+	// Member functions to set tweening information for multiple variables
+
+	void set_twn(T* ptr, T _start, T _end)
+	{
+		pointer.push_back(ptr);	// add pointer to the vector
+
+		start.push_back(_start);	// add initial value to the vector
+
+		end.push_back(_end);	// add end value to the vector
+	}
+
+	void set_twn(T* ptr, T end)
+	{
+		set_twn(ptr, *ptr, end);
+	}
+
+
+	// Sets the easing function to be used for tweening
+
+	void set_ease(TWN_TYPE::func _ease)
+	{
+		ease = _ease;	// set the easing function
+	}
+
+
+	// Clears the vectors, effectively ereasing the tweening information
+
+	void clear()
+	{
+		pointer.clear();
+
+		start.clear();
+
+		end.clear();
+	}
+
+
+	// Reserves space for the vectors
+
+	void reserve(std::size_t size)
+	{
+		pointer.reserve(size);
+
+		start.reserve(size);
+
+		end.reserve(size);
+	}
+
+
+	// Returns a tuple containing the tweening information
+
+	auto get_twn()
+	{
+		return twn(pointer, start, end, ease);	// return the tuple
+	}
+};

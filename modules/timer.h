@@ -675,7 +675,31 @@ class BASE_ASYNCHRONOUS_TIMER
 			twn(x, 0.0, (double)WIDTH - texture.getSize().x),
 			twn(opac, (uint8_t)0, (uint8_t)255, TWN_TYPE::linear)
 		)	// the tuple of tuples
-	)
+	);
+
+	if you have only one variable to tween, you can use the overloaded start() method
+
+	tween.start(
+		4,	// duration in seconds
+		twn(x, 0.0, (double)WIDTH - texture.getSize().x)	// tween tuple
+	);
+
+	if you have several variables of same type, you can use the overloaded start() method
+
+	tween.start(
+		4,	// duration in seconds
+		twn<float>({ &x, &opac }, { 0, 0 }, { (float)WIDTH - texture.getSize().x, 255 })	// tween tuple
+	);
+
+	### (x_x) ###
+
+	twn<type>() actually takes vectors, make sure that the vectors you pass this function
+	is in the scope when start() is called (say, from a finish callback), otherwise disaster
+	will happen
+
+	note:
+		Don't forget to mention the template argument (i.e., type of the values) when
+		calling this form of twn() function. More about this twn() over load in tween_accessories.h
 
 	"TWN_TYPE::linear" is the easing function that determins the type of tween, there are 31 types of
 	"tween_accessories.h"
@@ -790,6 +814,19 @@ class TWEENER : public BASE_ASYNCHRONOUS_TIMER
 	template <typename TYPE>
 
 	bool start(double duration, std::tuple<TYPE&, TYPE, TYPE, TWN_TYPE::func> twn, final_func _final = nullptr) noexcept
+	{
+		return start(duration, twn_list(twn), _final);
+	}
+
+	/*
+		overloaded start() to take a twn tuple consisted of vectors of pointers and values, makes
+		it simple to deal with multiple variables of same type, more about this twn() overload in
+		tween_accessories.h
+	*/
+
+	template <typename T>
+
+	bool start(double duration, std::tuple<TWEEN_VECTOR_PTR<T>, TWEEN_VECTOR<T>, TWEEN_VECTOR<T>, TWN_TYPE::func> twn, final_func _final = nullptr) noexcept
 	{
 		return start(duration, twn_list(twn), _final);
 	}
