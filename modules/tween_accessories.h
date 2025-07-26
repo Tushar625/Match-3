@@ -534,10 +534,12 @@ public:
 	are used as the initial values
 
 	note: ### (x_x) ###
-
+	
 		twn<type>() actually takes vectors, make sure that the vectors you pass this function
-		is in the scope when start() is called (say, from a finish callback), otherwise disaster
-		will happen
+		is in the scope when start() is called.
+
+		If you call tween.start() from inside a lambda function, make sure to capture the vectors
+		by value, the vectors may get destroyed before the tween starts, leading to undefined behavior.
 */
 
 
@@ -603,23 +605,23 @@ auto twn(const std::vector<T*>& data, const std::vector<T>& end, TWN_TYPE::func 
 	note: ### (x_x) ###
 
 		this class creates vectors internally, make sure that object is in the scope when
-		start() is called (say, from a finish callback), otherwise disaster will happen.
+		start() is called
 
-		Preferablly create it's object in global scope.
+		If you call tween.start() from inside a lambda function, make sure to capture the
+		object by value, the object may go out of scope before the tween starts, leading
+		to undefined behavior.
 
 	example:
 
-	MULTI_TWN<double> twn_vector;
+	MULTI_TWN<float> twn_vector();
 
-	{	
-		// setting several variables for tweening
+	// setting several variables for tweening
 
-		twn_vector.set_twn(&data1, 0.0, 100.0);
+	twn_vector.set_twn(&data1, 0.0, 100.0);
 
-		twn_vector.set_twn(&data2, 0.0, 100.0);
+	twn_vector.set_twn(&data2, 0.0, 100.0);
 
-		twn_vector.get_twn();	// returns the tuple, an arg to tweener start() or twn_list()
-	}
+	twn_vector.get_twn();	// returns the tuple, an arg to tweener start() or twn_list()	
 */
 
 template <typename T>
@@ -655,7 +657,7 @@ public:
 
 	// Member functions to set tweening information for multiple variables
 
-	void set_twn(T* ptr, T _start, T _end)
+	void set_twn(T* ptr, T _start, T _end) noexcept
 	{
 		pointer.push_back(ptr);	// add pointer to the vector
 
@@ -664,7 +666,7 @@ public:
 		end.push_back(_end);	// add end value to the vector
 	}
 
-	void set_twn(T* ptr, T end)
+	void set_twn(T* ptr, T end) noexcept
 	{
 		set_twn(ptr, *ptr, end);
 	}
@@ -672,7 +674,7 @@ public:
 
 	// Sets the easing function to be used for tweening
 
-	void set_ease(TWN_TYPE::func _ease)
+	void set_ease(TWN_TYPE::func _ease) noexcept
 	{
 		ease = _ease;	// set the easing function
 	}
@@ -680,7 +682,7 @@ public:
 
 	// Clears the vectors, effectively ereasing the tweening information
 
-	void clear()
+	void clear() noexcept
 	{
 		pointer.clear();
 
@@ -692,7 +694,7 @@ public:
 
 	// Reserves space for the vectors
 
-	void reserve(std::size_t size)
+	void reserve(std::size_t size) noexcept
 	{
 		pointer.reserve(size);
 
@@ -704,7 +706,7 @@ public:
 
 	// Returns a tuple containing the tweening information
 
-	auto get_twn()
+	auto get_twn() const noexcept
 	{
 		return twn(pointer, start, end, ease);	// return the tuple
 	}

@@ -669,37 +669,69 @@ class BASE_ASYNCHRONOUS_TIMER
 
 	let tween is an object of tweener
 
-	tween.start(
-		4,	// duration in seconds
-		twn_list(
-			twn(x, 0.0, (double)WIDTH - texture.getSize().x),
-			twn(opac, (uint8_t)0, (uint8_t)255, TWN_TYPE::linear)
-		)	// the tuple of tuples
-	);
+		tween.start(
+			4,	// duration in seconds
+			twn_list(
+				twn(x, 0.0, (double)WIDTH - texture.getSize().x),
+				twn(opac, (uint8_t)0, (uint8_t)255, TWN_TYPE::linear)
+			)	// the tuple of tuples
+		);
 
 	if you have only one variable to tween, you can use the overloaded start() method
 
-	tween.start(
-		4,	// duration in seconds
-		twn(x, 0.0, (double)WIDTH - texture.getSize().x)	// tween tuple
-	);
+		tween.start(
+			4,	// duration in seconds
+			twn(x, 0.0, (double)WIDTH - texture.getSize().x)	// tween tuple
+		);
 
 	if you have several variables of same type, you can use the overloaded start() method
 
-	tween.start(
-		4,	// duration in seconds
-		twn<float>({ &x, &opac }, { 0, 0 }, { (float)WIDTH - texture.getSize().x, 255 })	// tween tuple
-	);
+		tween.start(
+			4,	// duration in seconds
+			twn<float>({ &x, &opac }, { 0, 0 }, { (float)WIDTH - texture.getSize().x, 255 })	// tween tuple
+		);
 
 	### (x_x) ###
 
-	twn<type>() actually takes vectors, make sure that the vectors you pass this function
-	is in the scope when start() is called (say, from a finish callback), otherwise disaster
-	will happen
+		twn<type>() actually takes vectors, make sure that the vectors you pass this function
+		is in the scope when start() is called.
+
+		If you call tween.start() from inside a lambda function, make sure to capture the vectors
+		by value, the vectors may get destroyed before the tween starts, leading to undefined behavior.
 
 	note:
+		
 		Don't forget to mention the template argument (i.e., type of the values) when
 		calling this form of twn() function. More about this twn() over load in tween_accessories.h
+
+	in case of multiple variables of same type, you can also use MULTI_TWN<T> class
+
+		MULTI_TWN<float> twn_vector;	// MULTI_TWN object for float type
+
+		// setting several variables for tweening
+
+		twn_vector.set_twn(&variable1, 0.0, 100.0);
+
+		twn_vector.set_twn(&variable2, 0.0, 100.0);
+
+		tween.start(
+			4,	// duration in seconds
+			twn_vector.get_twn()	// the tuple of tuples
+		);
+
+	Here, "twn_vector.get_twn()" returns the same thing as "twn<float>({&variable1, &variable1}, {0, 0}, {100, 100})"
+	with MULTI_TWN<T>, it's very easy to add several variables of same type for tweening
+
+	### (x_x) ###
+
+		this class creates vectors internally, make sure that object is in the scope when
+		start() is called
+
+		If you call tween.start() from inside a lambda function, make sure to capture the
+		object by value, the object may go out of scope before the tween starts, leading
+		to undefined behavior.
+
+	More about MULTI_TWN<T> class in tween_accessories.h
 
 	"TWN_TYPE::linear" is the easing function that determins the type of tween, there are 31 types of
 	"tween_accessories.h"
