@@ -14,9 +14,22 @@
 
 struct brick_struct
 {
+	int index;	// index of the brick in the brickmap or grid
+
 	int color, type;
 
 	sf::Vector2f pos;
+
+	brick_struct(int _index, int _color, int _type, sf::Vector2f _pos)
+	{
+		index = _index;
+
+		color = _color;
+
+		type = _type;
+
+		pos = _pos;
+	}
 
 	void render() const noexcept
 	{

@@ -79,6 +79,8 @@ std::vector<sf::Sprite> generateSpriteVector(const sf::Texture& texture, unsigne
 
 	unsigned int gridHeight = textureArea.height / spriteHeight;
 
+	//std::cout << "\nGrid size: " << gridWidth << ", " << gridHeight;
+
 
 	std::vector<sf::Sprite> sprites(gridWidth * gridHeight, sf::Sprite(texture));
 
@@ -94,9 +96,13 @@ std::vector<sf::Sprite> generateSpriteVector(const sf::Texture& texture, unsigne
 		for (unsigned int gridX = 0; gridX < gridWidth; gridX++)
 		{
 			sprites[spriteCount++].setTextureRect(sf::IntRect(textureX, textureY, spriteWidth, spriteHeight));
+
+			//std::cout << "(" << textureX << ", " << textureY << ")";
 			
 			textureX += spriteWidth;
 		}
+
+		//std::cout << "\n";
 
 		textureY += spriteHeight;
 	}

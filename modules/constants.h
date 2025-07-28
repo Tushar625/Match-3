@@ -19,15 +19,16 @@
 #define LARGE_FONT_SIZE 32
 
 
+
 #define BRICK_WIDTH 32
 
 #define BRICK_HEIGHT 32
-
 
 #define BRICK_COLORS 18
 
 #define BRICK_TYPES 6
 
+#define MIN_MATCH_NUM 3
 
 
 
