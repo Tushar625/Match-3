@@ -1,0 +1,41 @@
+/*
+		brick_struct is a structure that represents a single brick in the grid.
+		it contains:
+			-color and type of the brick,
+			-its position on the screen
+
+		color and type are used to determine the index (color * BRICK_TYPES +
+		type) of the brick sprite from brick_sprite vector, which contains all
+		the brick sprites
+
+			-render() method is used to draw the brick at its position on the
+			screen.
+	*/
+
+struct brick_struct
+{
+	int color, type;
+
+	sf::Vector2f pos;
+
+	void render() const noexcept
+	{
+		auto& brick = brick_sprite[color * BRICK_TYPES + type];
+
+		// render the shadow
+
+		brick.setColor(sf::Color{ 30, 30, 30 });
+
+		brick.setPosition(pos + sf::Vector2f(2, 2));
+
+		bb::WINDOW.draw(brick);
+
+		// render the brick
+
+		brick.setColor(sf::Color{ 255, 255, 255 });
+
+		brick.setPosition(pos);
+
+		bb::WINDOW.draw(brick);
+	}
+};

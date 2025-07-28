@@ -6,42 +6,10 @@
 	selection, rendering, and swapping of the bricks in the game.
 */
 
-class brickmap_class
+class board_class
 {
 
-
-	/*
-		brick_struct is a structure that represents a single brick in the grid.
-		it contains:
-			-color and type of the brick,
-			-its position on the screen
-
-		color and type are used to determine the index (color * BRICK_TYPES +
-		type) of the brick sprite from brick_sprite vector, which contains all
-		the brick sprites
-
-			-render() method is used to draw the brick at its position on the
-			screen.
-	*/
-	
-	struct brick_struct
-	{
-		int color, type;
-
-		sf::Vector2f pos;
-
-		void render() const noexcept
-		{
-			auto& brick = brick_sprite[color * BRICK_TYPES + type];
-			
-			brick.setPosition(pos);
-
-			bb::WINDOW.draw(brick);
-		}
-	};
-
-	std::vector<brick_struct> bmap;	// vector to store the brickmap
-
+	std::vector<brick_struct> brick_map;	// vector to store the brickmap
 
 
 	// pointer data
@@ -79,7 +47,7 @@ public:
 
 
 
-	brickmap_class() : point(0), selected(-1)	// initializing the pointer and selecter
+	board_class() : point(0), selected(-1)	// initializing the pointer and selecter
 	{
 		// preparing the pointer, an empty rounded rectangle
 
@@ -99,7 +67,7 @@ public:
 
 		selecter.setSize(sf::Vector2f(BRICK_WIDTH, BRICK_HEIGHT));
 
-		selecter.setFillColor(sf::Color{255, 255, 255, 100});
+		selecter.setFillColor(sf::Color{ 255, 255, 255, 100 });
 
 		selecter.setRadius(6);
 
@@ -116,16 +84,16 @@ public:
 
 		offset is used to place the grid at a certain position on the screen
 	*/
-	
+
 	void generate_brickmap(sf::Vector2f offset)
 	{
 		int x, y;
 
 		// preparing the brickmap vector
 
-		bmap.clear();
+		brick_map.clear();
 
-		bmap.reserve(GRID_WIDTH * GRID_HEIGHT);
+		brick_map.reserve(GRID_WIDTH * GRID_HEIGHT);
 
 		// creating the grid of bricks
 
@@ -141,7 +109,7 @@ public:
 			{
 				// placing each brick
 
-				bmap.push_back(
+				brick_map.push_back(
 					brick_struct(
 						rand() % BRICK_COLORS,
 						rand() % BRICK_TYPES,
@@ -157,7 +125,7 @@ public:
 
 		// setting the pointer on the frst brick
 
-		pointer.setPosition(bmap[0].pos);
+		pointer.setPosition(brick_map[0].pos);
 	}
 
 	void update()
@@ -174,7 +142,7 @@ public:
 		{
 			point -= GRID_WIDTH;
 
-			pointer.setPosition(bmap[point].pos);
+			pointer.setPosition(brick_map[point].pos);
 		}
 
 		// pointer down if pointer is not on the last row
@@ -183,7 +151,7 @@ public:
 		{
 			point += GRID_WIDTH;
 
-			pointer.setPosition(bmap[point].pos);
+			pointer.setPosition(brick_map[point].pos);
 		}
 
 		// pointer left if pointer is not on the first column
@@ -192,7 +160,7 @@ public:
 		{
 			point -= 1;
 
-			pointer.setPosition(bmap[point].pos);
+			pointer.setPosition(brick_map[point].pos);
 		}
 
 		// pointer right if pointer is not on the last column
@@ -201,7 +169,7 @@ public:
 		{
 			point += 1;
 
-			pointer.setPosition(bmap[point].pos);
+			pointer.setPosition(brick_map[point].pos);
 		}
 
 
@@ -211,27 +179,27 @@ public:
 			{
 				// nothing is selected currently so select the pointed brick
 
-				selecter.setPosition(bmap[point].pos);
+				selecter.setPosition(brick_map[point].pos);
 
 				selected = point;
 			}
-			else
+			else if (adj_brick(selected, point))
 			{
 				// swapped the selected brick with the pointed brick
 
 				// swap bricks in brickmap vector
 
-				auto temp = bmap[point];
+				auto temp = brick_map[point];
 
-				bmap[point] = bmap[selected];
+				brick_map[point] = brick_map[selected];
 
-				bmap[selected] = temp;
+				brick_map[selected] = temp;
 
 				// swap positions of the bricks on screen with tween animation
 
-				auto& pos_p = bmap[point].pos;
+				auto& pos_p = brick_map[point].pos;
 
-				auto& pos_s = bmap[selected].pos;
+				auto& pos_s = brick_map[selected].pos;
 
 				tween.start(.2,
 					twn_list(
@@ -248,13 +216,18 @@ public:
 		}
 	}
 
+	bool adj_brick(int selected, int pointed)
+	{
+		return std::abs(selected - pointed) == 1 || std::abs(selected - pointed) == GRID_WIDTH;
+	}
+
 	void render()
 	{
 		// safely access the data being tweened using lock() and unlock()
 
 		tween.lock();
 
-		for (const auto& brick : bmap)
+		for (const auto& brick : brick_map)
 		{
 			brick.render();
 		}
@@ -272,4 +245,4 @@ public:
 			bb::WINDOW.draw(selecter);
 		}
 	}
-} brickmap;
+} board;

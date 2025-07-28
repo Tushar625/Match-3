@@ -53,7 +53,7 @@ inline bool bb::Game::Create()
 
 	// creating the brickmap
 
-	brickmap.generate_brickmap(sf::Vector2f(128, 16));
+	board.generate_brickmap(sf::Vector2f(128, 16));
 
 
 	return SUCCESS;
@@ -67,7 +67,7 @@ inline bool bb::Game::Update(double dt)
 		return STOP_GAME_LOOP;
 
 	
-	brickmap.update();
+	board.update();
 
 
 	return !STOP_GAME_LOOP;
@@ -81,5 +81,5 @@ inline void bb::Game::Render()
 
 	bb::WINDOW.draw(small_text);
 
-	brickmap.render();
+	board.render();
 }

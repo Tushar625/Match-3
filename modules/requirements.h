@@ -18,4 +18,6 @@
 
 #include"assets.h"
 
-#include"brickmap.h"
+#include"brick.h"
+
+#include"board.h"
