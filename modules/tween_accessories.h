@@ -357,6 +357,12 @@ auto twn_list(TYPE... twn_tuple) noexcept
 */
 
 
+// declaring TWEEN_VECTOR_PTR class so that we can make it a friend of TWEEN_VECTOR class
+
+template<typename T>
+class TWEEN_VECTOR_PTR;
+
+
 /*
 	the TWEEN_VECTOR class is a wrapper around std::vector<T>, that allows for element-wise
 	arithmetic operations between two TWEEN_VECTOR objects or between a TWEEN_VECTOR and a
@@ -368,15 +374,15 @@ template<typename T>
 class TWEEN_VECTOR
 {
 
-public:
-
-
 	std::vector<T> data;
+
+	friend class TWEEN_VECTOR_PTR<T>;
+
+
+public:
 
 	
 	// Constructor
-
-	TWEEN_VECTOR() = default;
 
 	TWEEN_VECTOR(const std::vector<T>& vec) : data(vec) {}
 
@@ -417,6 +423,10 @@ private:
 
 	/*
 		applies the element wise operations defined by the Op functor
+
+		Here, we create a new result object instead of updating the
+		existing object as we need to preserve the original objects
+		during the tween operation
 	*/
 
 
@@ -474,14 +484,13 @@ template <typename T>
 class TWEEN_VECTOR_PTR
 {
 
+	std::vector<T*> data;
+
+
 public:
 
 
-	std::vector<T*> data;
-
 	// constructor
-
-	TWEEN_VECTOR_PTR() = default;
 
 	TWEEN_VECTOR_PTR(const std::vector<T*>& vec) : data(vec) {}
 
