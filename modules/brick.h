@@ -31,7 +31,7 @@ struct brick_struct
 		pos = _pos;
 	}
 
-	void render() const noexcept
+	void render(const sf::Vector2f& offset) const noexcept
 	{
 		auto& brick = brick_sprite[color * BRICK_TYPES + type];
 
@@ -39,7 +39,7 @@ struct brick_struct
 
 		brick.setColor(sf::Color{ 30, 30, 30 });
 
-		brick.setPosition(pos + sf::Vector2f(2, 2));
+		brick.setPosition(pos + sf::Vector2f(2, 2) + offset);
 
 		bb::WINDOW.draw(brick);
 
@@ -47,7 +47,7 @@ struct brick_struct
 
 		brick.setColor(sf::Color{ 255, 255, 255 });
 
-		brick.setPosition(pos);
+		brick.setPosition(pos + offset);
 
 		bb::WINDOW.draw(brick);
 	}

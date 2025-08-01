@@ -11,6 +11,8 @@ class board_class
 
 	std::vector<brick_struct> brick_map;	// vector to store the brickmap
 
+	sf::Vector2f offset;
+
 
 	// pointer data
 
@@ -47,7 +49,7 @@ public:
 
 
 
-	board_class() : point(0), selected(-1)	// initializing the pointer and selecter
+	board_class() : offset(sf::Vector2f(0, 0)), point(0), selected(-1)	// initializing the pointer and selecter
 	{
 		// preparing the pointer, an empty rounded rectangle
 
@@ -75,6 +77,18 @@ public:
 	}
 
 
+	// setting the position of pointer and selector according to the offset
+
+	void set_pointer_pos(const sf::Vector2f& pos)
+	{
+		pointer.setPosition(pos + offset);
+	}
+
+	void set_selecter_pos(const sf::Vector2f& pos)
+	{
+		selecter.setPosition(pos + offset);
+	}
+
 
 	/*
 		generate_brickmap() creates a grid of bricks with random colors and types.
@@ -85,8 +99,10 @@ public:
 		offset is used to place the grid at a certain position on the screen
 	*/
 
-	void generate_brickmap(sf::Vector2f offset)
+	void generate_brickmap(const sf::Vector2f& offset)
 	{
+		this->offset = offset;
+
 		int x, y;
 
 		// preparing the brickmap vector
@@ -114,7 +130,7 @@ public:
 						brick_map.size(),
 						rand() % BRICK_COLORS,
 						rand() % BRICK_TYPES,
-						sf::Vector2f(x, y) + offset
+						sf::Vector2f(x, y)
 					)
 				);
 
@@ -130,7 +146,7 @@ public:
 
 		// setting the pointer on the frst brick
 
-		pointer.setPosition(brick_map[0].pos);
+		set_pointer_pos(brick_map[0].pos);
 
 		if (find_matches().size())
 		{
@@ -154,7 +170,7 @@ public:
 		{
 			point -= GRID_WIDTH;
 
-			pointer.setPosition(brick_map[point].pos);
+			set_pointer_pos(brick_map[point].pos);
 		}
 
 		// pointer down if pointer is not on the last row
@@ -163,7 +179,7 @@ public:
 		{
 			point += GRID_WIDTH;
 
-			pointer.setPosition(brick_map[point].pos);
+			set_pointer_pos(brick_map[point].pos);
 		}
 
 		// pointer left if pointer is not on the first column
@@ -172,7 +188,7 @@ public:
 		{
 			point -= 1;
 
-			pointer.setPosition(brick_map[point].pos);
+			set_pointer_pos(brick_map[point].pos);
 		}
 
 		// pointer right if pointer is not on the last column
@@ -181,7 +197,7 @@ public:
 		{
 			point += 1;
 
-			pointer.setPosition(brick_map[point].pos);
+			set_pointer_pos(brick_map[point].pos);
 		}
 
 
@@ -191,9 +207,13 @@ public:
 			{
 				// nothing is selected currently so select the pointed brick
 
-				selecter.setPosition(brick_map[point].pos);
+				set_selecter_pos(brick_map[point].pos);
 
 				selected = point;
+			}
+			else if (selected == point)
+			{
+				selected = -1;	// deselect the selected brick
 			}
 			else if (adj_brick(selected, point))
 			{
@@ -228,9 +248,7 @@ public:
 					),
 					[this](double dt)
 					{
-						auto matches = find_matches();
-
-						remove_matches(matches);
+						calculate_match();
 					}
 				);
 
@@ -245,6 +263,29 @@ public:
 	bool adj_brick(int selected, int pointed)
 	{
 		return ((selected / GRID_WIDTH == pointed / GRID_WIDTH) && std::abs(selected - pointed) == 1) || std::abs(selected - pointed) == GRID_WIDTH;
+	}
+
+
+	void calculate_match()
+	{
+		auto matches = find_matches();
+
+		if (matches.size())
+		{
+			// matches are found
+
+			remove_matches(matches);
+
+			auto twn_vector = fill_matches();
+
+			tween.start(.5,
+				twn_vector.get_twn(),
+				[this](double dt)
+				{
+					calculate_match();
+				}
+			);
+		}
 	}
 
 
@@ -408,6 +449,107 @@ public:
 	}
 
 
+	MULTI_TWN<float> fill_matches()
+	{
+		MULTI_TWN<float> twn_vector;
+
+		bool space_flag;
+
+		float space_y;
+
+		// can be modified
+
+		for(int x = 0; x < GRID_WIDTH; x++)
+		{
+			space_flag = false;
+			
+			for (int y = GRID_HEIGHT - 1; y >= 0; y--)
+			{
+				auto& curr_grid = brick_map[y * GRID_WIDTH + x];
+
+				if (space_flag)
+				{
+					// we have a space grid at space_y trying to fill it
+
+					if(curr_grid.pos != sf::Vector2f(-100, -100))
+					{
+						// current grid is not a space, so we can fill the space with this grid
+
+						auto& space_grid = brick_map[space_y * GRID_WIDTH + x];
+
+						// brick in the current grid will be placed in the space grid so,
+
+						// copy all data from the current grid to the space grid
+
+						space_grid = curr_grid;
+
+						// update the index of the space grid
+
+						space_grid.index = space_y * GRID_WIDTH + x;
+
+						// tween the position of the space grid, from current position to the position of the space
+
+						twn_vector.set_twn(&space_grid.pos.y, space_y * BRICK_HEIGHT);
+
+						// empty current grid
+
+						curr_grid.pos = sf::Vector2f(-100, -100);
+
+						// the grid on top of former space grid is now a space so we decrement space_y
+
+						space_y--;
+					}
+				}
+				else
+				{
+					// no space found yet, so we check if the current grid is a space
+
+					if (curr_grid.pos == sf::Vector2f(-100, -100))
+					{
+						// current grid is a space so we need to fill it with a brick from above
+
+						space_flag = true;
+						
+						space_y = y;	// grid position y
+					}
+				}
+			}
+		}
+
+		// adding new bricks
+
+		for (int x = 0; x < GRID_WIDTH; x++)
+		{
+			int y = GRID_HEIGHT - 1;
+
+			// find the first empty space in the column starting from bottom
+
+			for (; y >= 0 && brick_map[y * GRID_WIDTH + x].pos != sf::Vector2f(-100, -100); y--);
+
+			int y_start = -BRICK_HEIGHT;	// y of the first brick to fall
+
+			// now we fillup the space from the bottom
+
+			for(; y >=0; y--, y_start -= BRICK_HEIGHT)
+			{
+				auto& curr_grid = brick_map[y * GRID_WIDTH + x];
+
+				curr_grid.index = y * GRID_WIDTH + x;
+				
+				curr_grid.color = rand() % BRICK_COLORS;
+				
+				curr_grid.type = rand() % BRICK_TYPES;
+				
+				curr_grid.pos = sf::Vector2f(x * BRICK_WIDTH, y_start);
+				
+				twn_vector.set_twn(&curr_grid.pos.y, y * BRICK_HEIGHT);
+			}
+		}
+
+		return twn_vector;
+	}
+
+
 	void render()
 	{
 		// safely access the data being tweened using lock() and unlock()
@@ -416,7 +558,7 @@ public:
 
 		for (const auto& brick : brick_map)
 		{
-			brick.render();
+			brick.render(offset);
 		}
 
 		tween.unlock();
