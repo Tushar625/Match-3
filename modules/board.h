@@ -332,10 +332,14 @@ public:
 						matches.push_back(match);
 					}
 
+					// the match, if found, is listed so clear the match vector to prepare for next match
+
 					match.clear();
 
 					if (GRID_WIDTH - x < MIN_MATCH_NUM)
 					{
+						// if there are 2 or less bricks left in the row, no matches can be formed, break the loop
+
 						break;
 					}
 
@@ -376,7 +380,7 @@ public:
 
 			match.push_back(brick_map[0 * GRID_WIDTH + x]);
 
-			// checking a row
+			// checking a column
 
 			for (int y = 1; y < GRID_HEIGHT; y++)	// we already accounted for first brick, so starting from index 1
 			{
@@ -399,10 +403,14 @@ public:
 						matches.push_back(match);
 					}
 
+					// the match, if found, is listed so clear the match vector to prepare for next match
+
 					match.clear();
 
 					if (GRID_HEIGHT - y < MIN_MATCH_NUM)
 					{
+						// if there are 2 or less bricks left in the column, no matches can be formed, break the loop
+
 						break;
 					}
 
