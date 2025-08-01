@@ -443,6 +443,27 @@ public:
 	}
 
 
+	bool is_space_grid(int x, int y) const noexcept
+	{
+		return brick_map[y * GRID_WIDTH + x].pos == sf::Vector2f(-100, -100);
+	}
+
+	bool not_space_grid(int x, int y) const noexcept
+	{
+		return brick_map[y * GRID_WIDTH + x].pos != sf::Vector2f(-100, -100);
+	}
+
+	void empty_grid(int x, int y) noexcept
+	{
+		brick_map[y * GRID_WIDTH + x].pos = sf::Vector2f(-100, -100);
+	}
+
+	void empty_grid(int index) noexcept
+	{
+		brick_map[index].pos = sf::Vector2f(-100, -100);
+	}
+
+
 	void remove_matches(const std::vector<std::vector<brick_struct>>& matches)
 	{
 		//std::cout << "matches size: " << matches.size();
@@ -461,68 +482,64 @@ public:
 	{
 		MULTI_TWN<float> twn_vector;
 
-		bool space_flag;
 
-		float space_y;
 
-		// can be modified
+		// dropping bricks to fill the spaces in the grid
 
 		for(int x = 0; x < GRID_WIDTH; x++)
 		{
-			space_flag = false;
-			
-			for (int y = GRID_HEIGHT - 1; y >= 0; y--)
+			int y = GRID_HEIGHT - 1;
+
+
+			// find the first empty space in the column starting from bottom
+
+			for (; y >= 0 && brick_map[y * GRID_WIDTH + x].pos != sf::Vector2f(-100, -100); y--);
+
+			int space_y = y;	// y of the first empty space
+
+
+			// now dropping bricks to fillup the space
+
+			y--;	// starting from the grid on top of space grid
+
+			for (; y >= 0; y--)
 			{
 				auto& curr_grid = brick_map[y * GRID_WIDTH + x];
 
-				if (space_flag)
+				// trying to fill the space grid at space_y
+
+				if (curr_grid.pos != sf::Vector2f(-100, -100))
 				{
-					// we have a space grid at space_y trying to fill it
+					// current grid is not a space, so we can fill the space with this grid
 
-					if(curr_grid.pos != sf::Vector2f(-100, -100))
-					{
-						// current grid is not a space, so we can fill the space with this grid
+					auto& space_grid = brick_map[space_y * GRID_WIDTH + x];
 
-						auto& space_grid = brick_map[space_y * GRID_WIDTH + x];
+					// brick in the current grid will be placed at the space grid so,
 
-						// brick in the current grid will be placed in the space grid so,
+					// copy all data from the current grid to the space grid
 
-						// copy all data from the current grid to the space grid
+					space_grid = curr_grid;
 
-						space_grid = curr_grid;
+					// update the index of the space grid
 
-						// update the index of the space grid
+					space_grid.index = space_y * GRID_WIDTH + x;
 
-						space_grid.index = space_y * GRID_WIDTH + x;
+					// tween the position of the space grid, from current position to the position of the space
 
-						// tween the position of the space grid, from current position to the position of the space
+					twn_vector.set_twn(&space_grid.pos.y, space_y * BRICK_HEIGHT);
 
-						twn_vector.set_twn(&space_grid.pos.y, space_y * BRICK_HEIGHT);
+					// empty current grid
 
-						// empty current grid
+					curr_grid.pos = sf::Vector2f(-100, -100);
 
-						curr_grid.pos = sf::Vector2f(-100, -100);
+					// the grid on top of former space grid is now a space so we decrement space_y
 
-						// the grid on top of former space grid is now a space so we decrement space_y
-
-						space_y--;
-					}
-				}
-				else
-				{
-					// no space found yet, so we check if the current grid is a space
-
-					if (curr_grid.pos == sf::Vector2f(-100, -100))
-					{
-						// current grid is a space so we need to fill it with a brick from above
-
-						space_flag = true;
-						
-						space_y = y;	// grid position y
-					}
+					space_y--;
 				}
 			}
 		}
+
+
 
 		// adding new bricks
 
@@ -530,13 +547,20 @@ public:
 		{
 			int y = GRID_HEIGHT - 1;
 
+
 			// find the first empty space in the column starting from bottom
 
 			for (; y >= 0 && brick_map[y * GRID_WIDTH + x].pos != sf::Vector2f(-100, -100); y--);
 
 			int y_start = -BRICK_HEIGHT;	// y of the first brick to fall
 
+
 			// now we fillup the space from the bottom
+
+			/*
+				notice "y_start -= BRICK_HEIGHT", we are placing falling bricks on top of
+				eachother, to create a nice cascading effect when they falls
+			*/
 
 			for(; y >=0; y--, y_start -= BRICK_HEIGHT)
 			{
@@ -553,6 +577,8 @@ public:
 				twn_vector.set_twn(&curr_grid.pos.y, y * BRICK_HEIGHT);
 			}
 		}
+
+
 
 		return twn_vector;
 	}
