@@ -59,7 +59,7 @@ inline bool bb::Game::Create()
 
 	// creating the brickmap
 
-	board.generate_brickmap(sf::Vector2f(128, 16));
+	//board.generate_brickmap(sf::Vector2f(128, 16));
 
 
 	return SUCCESS;
@@ -73,7 +73,7 @@ inline bool bb::Game::Update(double dt)
 		return STOP_GAME_LOOP;
 
 	
-	board.update();
+	sm.Update(dt);
 
 
 	return !STOP_GAME_LOOP;
@@ -83,9 +83,9 @@ inline void bb::Game::Render()
 {
 	// rendering the fps
 	
+	sm.Render();
+
 	small_text.setString("Fps: " + std::to_string(static_cast<int>(bb::MY_GAME.get_fps() + .5)));
 
 	bb::WINDOW.draw(small_text);
-
-	board.render();
 }

@@ -10,6 +10,8 @@
 
 #include<string>
 
+#include<array>
+
 #include<vector>
 
 #include"constants.h"

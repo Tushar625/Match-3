@@ -20,6 +20,8 @@ struct brick_struct
 
 	sf::Vector2f pos;
 
+	brick_struct() = default;
+
 	brick_struct(int _index, int _color, int _type, sf::Vector2f _pos)
 	{
 		index = _index;
