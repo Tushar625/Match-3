@@ -12,6 +12,8 @@ std::vector<sf::Sprite> brick_sprite;
 
 sf::Sprite bg_sprite;
 
+bb::STATE_MACHINE sm;
+
 
 
 class ASSET_LOADER

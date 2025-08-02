@@ -51,6 +51,12 @@ inline bool bb::Game::Create()
 	srand(time(0));
 
 
+	// setting up initial state
+
+	sm.change_to(play);
+
+
+
 	// creating the brickmap
 
 	board.generate_brickmap(sf::Vector2f(128, 16));
