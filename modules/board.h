@@ -472,7 +472,7 @@ public:
 		{
 			for (const auto& brick : match)
 			{
-				brick_map[brick.index].pos = sf::Vector2f(-100, -100);
+				empty_grid(brick.index);
 			}
 		}
 	}
@@ -493,7 +493,7 @@ public:
 
 			// find the first empty space in the column starting from bottom
 
-			for (; y >= 0 && brick_map[y * GRID_WIDTH + x].pos != sf::Vector2f(-100, -100); y--);
+			for (; y >= 0 && not_space_grid(x, y); y--);
 
 			int space_y = y;	// y of the first empty space
 
@@ -504,13 +504,13 @@ public:
 
 			for (; y >= 0; y--)
 			{
-				auto& curr_grid = brick_map[y * GRID_WIDTH + x];
-
 				// trying to fill the space grid at space_y
 
-				if (curr_grid.pos != sf::Vector2f(-100, -100))
+				if (not_space_grid(x, y))
 				{
 					// current grid is not a space, so we can fill the space with this grid
+
+					auto& curr_grid = brick_map[y * GRID_WIDTH + x];
 
 					auto& space_grid = brick_map[space_y * GRID_WIDTH + x];
 
@@ -520,6 +520,10 @@ public:
 
 					space_grid = curr_grid;
 
+					// empty current grid
+
+					empty_grid(x, y);
+
 					// update the index of the space grid
 
 					space_grid.index = space_y * GRID_WIDTH + x;
@@ -527,10 +531,6 @@ public:
 					// tween the position of the space grid, from current position to the position of the space
 
 					twn_vector.set_twn(&space_grid.pos.y, space_y * BRICK_HEIGHT);
-
-					// empty current grid
-
-					curr_grid.pos = sf::Vector2f(-100, -100);
 
 					// the grid on top of former space grid is now a space so we decrement space_y
 
@@ -550,7 +550,7 @@ public:
 
 			// find the first empty space in the column starting from bottom
 
-			for (; y >= 0 && brick_map[y * GRID_WIDTH + x].pos != sf::Vector2f(-100, -100); y--);
+			for (; y >= 0 && not_space_grid(x, y); y--);
 
 			int y_start = -BRICK_HEIGHT;	// y of the first brick to fall
 
