@@ -14,9 +14,19 @@ class board_class
 
 public:
 
+
 	board_class()
 	{
-		generate_brickmap();
+		if (!bb::load_local_appdata("candycrush_brick_map.bin", *this))
+		{
+			generate_brickmap();
+		}
+	}
+
+
+	~board_class()
+	{
+		bb::store_local_appdata("candycrush_brick_map.bin", *this);
 	}
 
 

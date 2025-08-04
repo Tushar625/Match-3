@@ -2,7 +2,17 @@
 
 class play_state : public bb::BASE_STATE
 {
+	game_data_type g_data;
 
+
+
+	// the score board
+
+	score_board_class score_board;
+
+
+
+	// offset for the brick map
 
 	const sf::Vector2f offset;
 
@@ -39,11 +49,17 @@ class play_state : public bb::BASE_STATE
 
 
 
+	// interval timer
+
+	INTERVAL_TIMER timer;
+
+
+
 public:
 
 
 
-	play_state() : offset(sf::Vector2f(128, 16)), point(0), selected(-1)	// initializing the pointer and selecter
+	play_state() : score_board(sf::Vector2f(24, 24)), offset(sf::Vector2f(VIRTUAL_WIDTH - 272, 16)), point(0), selected(-1)	// initializing the pointer and selecter
 	{
 		// preparing the pointer, an empty rounded rectangle
 
@@ -94,7 +110,20 @@ private:
 
 	void Enter() override
 	{
-		//offset = sf::Vector2f(128, 16);
+		// starting the game timer countdown
+
+		timer.start(1, [this](double dt) -> bool
+			{
+				if (g_data.time <= 0)
+				{
+					return false;	// stop the timer
+				}
+
+				g_data.time--;
+
+				return true;	// continue the timer
+			}
+		);
 	}
 
 
@@ -221,7 +250,18 @@ private:
 		{
 			// matches are found
 
+			// updating the score
+
+			for(const auto& match : matches)
+			{
+				g_data.score += match.size() * 50;	// 10 points for each brick in the match
+			}
+
+			// removing matched bricks
+
 			board.remove_matches(matches);
+
+			// filling new bricks in the empty spaces
 
 			auto twn_vector = board.fill_matches();
 
@@ -239,6 +279,12 @@ private:
 
 	void Render() override
 	{
+		timer.lock();
+
+		score_board.render(g_data.level, g_data.score, g_data.goal, g_data.time);
+
+		timer.unlock();
+
 		// safely access the data being tweened using lock() and unlock()
 
 		tween.lock();

@@ -39,7 +39,7 @@ struct brick_struct
 
 		// render the shadow
 
-		brick.setColor(sf::Color{ 30, 30, 30 });
+		brick.setColor(sf::Color{ 30, 30, 30, 200 });
 
 		brick.setPosition(pos + sf::Vector2f(2, 2) + offset);
 

@@ -63,7 +63,12 @@ public:
 
 		brick_sprite = generateSpriteVector(texture[MAIN], BRICK_WIDTH, BRICK_HEIGHT);
 
+		texture[BACKGROUND].setSmooth(false);
+
 		bg_sprite.setTexture(texture[BACKGROUND]);
 
+		// the part of the background texture we want to use
+
+		bg_sprite.setTextureRect(sf::IntRect(20, 46, texture[BACKGROUND].getSize().x - 20, texture[BACKGROUND].getSize().y - 46));
 	}
 } obj;

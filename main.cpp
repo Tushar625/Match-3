@@ -1,7 +1,6 @@
 
-/*
-	a general format only, you should remove or change any code as you need
-*/
+
+#define GAME_CLEAR
 
 #define SET_ANTIALIASHING	// this macro allows you to set antialiashing
 
@@ -50,6 +49,8 @@ inline bool bb::Game::Create()
 
 	srand(time(0));
 
+	bb::Game::set_fps(60);
+
 
 	// setting up initial state
 
@@ -65,6 +66,8 @@ inline bool bb::Game::Create()
 	return SUCCESS;
 }
 
+
+
 inline bool bb::Game::Update(double dt)
 {
 	// exit
@@ -75,9 +78,20 @@ inline bool bb::Game::Update(double dt)
 	
 	sm.Update(dt);
 
+	bg.update(dt);
+
 
 	return !STOP_GAME_LOOP;
 }
+
+
+
+inline void bb::Game::Clear()
+{
+	bg.render();
+}
+
+
 
 inline void bb::Game::Render()
 {

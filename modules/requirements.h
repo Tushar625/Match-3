@@ -6,6 +6,8 @@
 
 #include"rounded_rectangle.h"
 
+#include"BBS/asset/SFML_Text/tools.h"
+
 #include<iostream>	// only for debugging
 
 #include<string>
@@ -20,8 +22,14 @@
 
 #include"assets.h"
 
+#include"background.h"
+
 #include"brick.h"
 
 #include"board.h"
+
+#include"score_board.h"
+
+#include"game_states/state_data.h"
 
 #include"game_states/play_state.h"
