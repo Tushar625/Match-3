@@ -2,6 +2,8 @@
 
 #include"BBS\game.h"	// mention path to game.h
 
+#include"BBS\asset\button\all.h"
+
 #include"timer.h"
 
 #include"rounded_rectangle.h"
@@ -31,5 +33,7 @@
 #include"score_board.h"
 
 #include"game_states/state_data.h"
+
+#include"game_states/initial_state.h"
 
 #include"game_states/play_state.h"

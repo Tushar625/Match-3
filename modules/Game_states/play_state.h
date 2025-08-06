@@ -6,15 +6,21 @@ class play_state : public bb::BASE_STATE
 
 
 
-	// the score board
+	// the brickmap
 
-	score_board_class score_board;
+	board_class board;
 
 
 
 	// offset for the brick map
 
 	const sf::Vector2f offset;
+
+
+
+	// the score board
+
+	score_board_class score_board;
 
 
 
@@ -59,7 +65,12 @@ public:
 
 
 
-	play_state() : score_board(sf::Vector2f(24, 24)), offset(sf::Vector2f(VIRTUAL_WIDTH - 272, 16)), point(0), selected(-1)	// initializing the pointer and selecter
+	play_state() :
+		board(true),	// we save this board data
+		score_board(sf::Vector2f(24, 24)),
+		offset(sf::Vector2f(VIRTUAL_WIDTH - 272, 16)),
+		point(0),
+		selected(-1)	// initializing the pointer and selecter
 	{
 		// preparing the pointer, an empty rounded rectangle
 
@@ -134,8 +145,13 @@ private:
 
 		tween.xfinal();
 
+		// don't take input when tween operations are running
+
 		if (tween.is_running())
 			return;
+
+
+		// ===== taking inputs =====
 
 
 		// pointer up if pointer is not on the first row
@@ -191,7 +207,7 @@ private:
 			}
 			else if (adj_brick(selected, point))
 			{
-				// swapped the selected brick with the pointed brick
+				// swapping the selected brick with the pointed brick
 
 				// swap bricks in brickmap vector
 
@@ -242,6 +258,11 @@ private:
 
 
 
+	/*
+		after each swap this function is used to check for matches, update score,
+		delete bricks and spawn new bricks
+	*/
+
 	void calculate_match()
 	{
 		auto matches = board.find_matches();
@@ -265,7 +286,7 @@ private:
 
 			auto twn_vector = board.fill_matches();
 
-			tween.start(.5,
+			tween.start(.3,
 				twn_vector.get_twn(),
 				[this](double dt)
 				{
@@ -279,6 +300,8 @@ private:
 
 	void Render() override
 	{
+		// safely access the data being updated by interval timer
+
 		timer.lock();
 
 		score_board.render(g_data.level, g_data.score, g_data.goal, g_data.time);

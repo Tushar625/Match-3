@@ -37,4 +37,4 @@ public:
 
 		bb::WINDOW.draw(bg_sprite);
 	}
-} bg;
+};

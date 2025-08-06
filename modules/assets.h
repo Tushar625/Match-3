@@ -24,6 +24,9 @@ public:
 
 	ASSET_LOADER()
 	{
+
+		srand(time(0));
+
 		
 
 		if (!font.loadFromFile("font/font.ttf"))

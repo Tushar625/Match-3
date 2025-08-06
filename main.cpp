@@ -19,6 +19,10 @@ unsigned int bb::set_antialiashing()
 
 
 
+background bg;
+
+
+
 // ~~~~ [write your statements (extra functions, classes, variables) here] ~~~~
 
 inline bool bb::Game::Create()
@@ -47,14 +51,12 @@ inline bool bb::Game::Create()
 
 	bb::WINDOW.setPosition(sf::Vector2i(100, 100));
 
-	srand(time(0));
-
 	bb::Game::set_fps(60);
 
 
 	// setting up initial state
 
-	sm.change_to(play);
+	sm.change_to(initial);
 
 
 
@@ -72,7 +74,7 @@ inline bool bb::Game::Update(double dt)
 {
 	// exit
 
-	if (bb::INPUT.isClosed() || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
+	if (bb::INPUT.isClosed() || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape) || sm.null_state())
 		return STOP_GAME_LOOP;
 
 	

@@ -1,6 +1,7 @@
 #pragma once
 
 
+
 struct game_data_type
 {
 	int score;	// current score of the game

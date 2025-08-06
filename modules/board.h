@@ -11,13 +11,19 @@ class board_class
 
 	std::array<brick_struct, GRID_WIDTH * GRID_HEIGHT> brick_map;	// vector to store the brickmap
 
+	const bool save;	// if save is true we access file
+
 
 public:
 
+	/*
+		if this constructor is not called explicitly save will get false and
+		the brick map will not be saved
+	*/
 
-	board_class()
+	board_class(bool _save = false) : save(_save)
 	{
-		if (!bb::load_local_appdata("candycrush_brick_map.bin", *this))
+		if (!(save && bb::load_local_appdata("candycrush_brick_map.bin", *this)))
 		{
 			generate_brickmap();
 		}
@@ -26,7 +32,10 @@ public:
 
 	~board_class()
 	{
-		bb::store_local_appdata("candycrush_brick_map.bin", *this);
+		if (save)
+		{
+			bb::store_local_appdata("candycrush_brick_map.bin", *this);
+		}
 	}
 
 
@@ -393,4 +402,4 @@ public:
 			brick.render(offset);
 		}
 	}
-} board;
+};
