@@ -8,7 +8,9 @@
 
 #include"rounded_rectangle.h"
 
-#include"BBS/asset/SFML_Text/tools.h"
+#include"color_text.h"
+
+#include"BBS\asset\SFML_Text\tools.h"
 
 #include<iostream>	// only for debugging
 

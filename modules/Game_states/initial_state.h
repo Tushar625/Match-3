@@ -13,7 +13,11 @@ class initial_state : public bb::BASE_STATE
 
 	bb::MENU<bb::STR_BUTTON> menu;
 
+	RoundedRectangle bg_header;
 
+	ColorText header;
+
+	
 public:
 
 	initial_state() :
@@ -34,6 +38,7 @@ public:
 	{
 		bg_dimmer.setFillColor(sf::Color(0, 0, 0, 128));
 
+		// background of the menu
 
 		bg_menu.setRadius(6);
 
@@ -46,6 +51,31 @@ public:
 		bg_menu.setOrigin(bg_menu.getSize().x / 2, 0);
 
 		bg_menu.setPosition(sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2));
+
+		// background of the header
+
+		bg_header = bg_menu;
+
+		bg_header.setSize(sf::Vector2f(160, BRICK_HEIGHT * 2));
+
+		bg_header.setOrigin(bg_header.getSize().x / 2, bg_header.getSize().y / 2);
+
+		bg_header.setPosition(sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - BRICK_HEIGHT * 2));
+
+		// preparing the header
+
+		header.set(large_text, "MATCH 3", 3, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - BRICK_HEIGHT * 2, bb::CENTER);
+
+		header.setColor(
+			{
+				{217, 87, 99},
+				{95, 205, 228},
+				{251, 242, 54},
+				{118, 66, 138},
+				{153, 229, 80},
+				{223, 113, 38}
+			}
+		);
 	}
 
 	void Enter() override
@@ -86,6 +116,8 @@ public:
 		{
 			sm.change_to(bb::NULL_STATE);
 		}
+
+		header.updateRS(dt);
 	}
 
 	void Render() override
@@ -93,6 +125,14 @@ public:
 		board.render(offset);
 
 		bb::WINDOW.draw(bg_dimmer);
+
+		// header
+
+		bb::WINDOW.draw(bg_header);
+
+		header.render();
+
+		// menu background
 
 		bb::WINDOW.draw(bg_menu);
 
