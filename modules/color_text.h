@@ -131,29 +131,36 @@ public:
 		}
 	}
 
+	sf::Text getText(int index) const noexcept
+	{
+		return m_textList[index];
+	}
+
+	int getTextCount() const noexcept
+	{
+		return static_cast<int>(m_textList.size());
+	}
+
 	void render()
 	{
 		for (const auto& text : m_textList)
 		{
-			auto shadow_text = text;
-
-			shadow_text.setFillColor(sf::Color(34, 32, 52));
-
-			auto pos = shadow_text.getPosition();
-
-			shadow_text.setPosition(pos + sf::Vector2f(1.5, 1)); bb::WINDOW.draw(shadow_text);
-
-			shadow_text.setPosition(pos + sf::Vector2f(1.5, 1.5)); bb::WINDOW.draw(shadow_text);
-
-			shadow_text.setPosition(pos + sf::Vector2f(1, 1)); bb::WINDOW.draw(shadow_text);
-
-			shadow_text.setPosition(pos + sf::Vector2f(0, 1)); bb::WINDOW.draw(shadow_text);
-
-			shadow_text.setPosition(pos + sf::Vector2f(0, 1.5)); bb::WINDOW.draw(shadow_text);
-
-			shadow_text.setPosition(pos + sf::Vector2f(1, 1.5)); bb::WINDOW.draw(shadow_text);
-
 			bb::WINDOW.draw(text);
 		}
 	}
 };
+
+
+void textShadow(sf::Text text, const std::vector<sf::Vector2f>& offsets, const sf::Color& color = sf::Color(0, 0, 0))
+{
+	text.setFillColor(color);
+
+	auto pos = text.getPosition();
+
+	for (const auto& offset : offsets)
+	{
+		text.setPosition(pos + offset);
+
+		bb::WINDOW.draw(text);
+	}
+}

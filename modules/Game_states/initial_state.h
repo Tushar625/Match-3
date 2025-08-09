@@ -126,9 +126,18 @@ public:
 
 		bb::WINDOW.draw(bg_dimmer);
 
-		// header
+		// header background
 
 		bb::WINDOW.draw(bg_header);
+
+		// header shadow
+
+		for (int i = 0; i < header.getTextCount(); i++)
+		{
+			textShadow(header.getText(i), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+		}
+
+		// header
 
 		header.render();
 
@@ -140,26 +149,10 @@ public:
 
 		for (int i = 0; i < menu.get_bcount(); i++)
 		{
-			auto text = menu[i].get_text();
-
-			text.setFillColor(sf::Color(34, 32, 52));
-
-			auto pos = text.getPosition();
-
-			//text.setOutlineThickness(.5);
-
-			text.setPosition(pos + sf::Vector2f(1.5, 1)); bb::WINDOW.draw(text);
-
-			text.setPosition(pos + sf::Vector2f(1.5, 1.5)); bb::WINDOW.draw(text);
-
-			text.setPosition(pos + sf::Vector2f(1, 1)); bb::WINDOW.draw(text);
-
-			text.setPosition(pos + sf::Vector2f(0, 1)); bb::WINDOW.draw(text);
-
-			text.setPosition(pos + sf::Vector2f(0, 1.5)); bb::WINDOW.draw(text);
-
-			text.setPosition(pos + sf::Vector2f(1, 1.5)); bb::WINDOW.draw(text);
+			textShadow(menu[i].get_text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
 		}
+
+		// menu
 
 		menu.Render(bb::STR_BUTTON::color);
 	}
