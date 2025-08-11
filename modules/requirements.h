@@ -4,11 +4,11 @@
 
 #include"BBS\asset\button\all.h"
 
+#include"BBS\asset\text\all.h"
+
 #include"timer.h"
 
 #include"rounded_rectangle.h"
-
-#include"color_text.h"
 
 #include"BBS\asset\SFML_Text\tools.h"
 

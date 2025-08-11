@@ -30,8 +30,7 @@ public:
 				sf::Color(48, 96, 130),
 				sf::Color(99, 155, 255),
 				10,
-				VIRTUAL_WIDTH / 2,
-				VIRTUAL_HEIGHT / 2 + 10,
+				sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 + 10),
 				bb::TOP_CENTER
 			)
 		)
@@ -58,13 +57,19 @@ public:
 
 		bg_header.setSize(sf::Vector2f(160, BRICK_HEIGHT * 2));
 
-		bg_header.setOrigin(bg_header.getSize().x / 2, bg_header.getSize().y / 2);
+		bg_header.setOrigin((bg_header.getSize().x - 1) / 2, (bg_header.getSize().y - 1) / 2);
 
 		bg_header.setPosition(sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - BRICK_HEIGHT * 2));
 
 		// preparing the header
 
-		header.set(large_text, "MATCH 3", 3, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - BRICK_HEIGHT * 2, bb::CENTER);
+		header.set(
+			large_text,
+			"MATCH 3",
+			3.5,
+			sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - BRICK_HEIGHT * 2),
+			bb::CENTER
+		);
 
 		header.setColor(
 			{
