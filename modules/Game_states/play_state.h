@@ -49,6 +49,18 @@ class play_state : public bb::BASE_STATE
 
 
 
+	/*
+		used to create curtain effect
+	*/
+
+	sf::RectangleShape curtain;
+
+	int curtain_alpha;
+
+	bool curtain_active;
+
+
+
 	// tweener
 
 	TWEENER tween;
@@ -70,7 +82,10 @@ public:
 		score_board(sf::Vector2f(24, 24)),
 		offset(sf::Vector2f(VIRTUAL_WIDTH - 272, 16)),
 		point(0),
-		selected(-1)	// initializing the pointer and selecter
+		selected(-1),	// initializing the pointer and selecter
+		curtain(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
+		curtain_alpha(0),
+		curtain_active(false)
 	{
 		// preparing the pointer, an empty rounded rectangle
 
@@ -119,20 +134,64 @@ private:
 
 
 
+public:
+
+
+
+	void init(bool new_game)
+	{
+		// starting a new game
+
+		g_data.score = 0;
+		
+		g_data.level = 1;
+		
+		g_data.time = 60;
+		
+		g_data.goal = 1000;
+
+		// new brickmap
+
+		board.generate_brickmap();
+
+		point = 0;
+
+		set_pointer_pos(board[point].pos);
+		
+		selected = -1;
+	}
+
+
+
+public:
+
+
+
 	void Enter() override
 	{
-		// starting the game timer countdown
+		curtain_active = true;
 
-		timer.start(1, [this](double dt) -> bool
+		tween.start(
+			1,
+			twn(curtain_alpha, 255, 0),
+			[this](double dt)
 			{
-				if (g_data.time <= 0)
-				{
-					return false;	// stop the timer
-				}
+				curtain_active = false;
 
-				g_data.time--;
+				// starting the game timer countdown after teh curtain is up
 
-				return true;	// continue the timer
+				timer.start(1, [this](double dt) -> bool
+					{
+						if (g_data.time <= 0)
+						{
+							return false;	// stop the timer
+						}
+
+						g_data.time--;
+
+						return true;	// continue the timer
+					}
+				);
 			}
 		);
 	}
@@ -141,7 +200,7 @@ private:
 
 	void Update(double dt) override
 	{
-		// don't allow any input, when the tween thread is running
+		// don't allow any input or processing operations, when the tween thread is running
 
 		tween.xfinal();
 
@@ -151,7 +210,52 @@ private:
 			return;
 
 
+		// remaining time check
+
+		timer.lock();
+
+		if (g_data.time == 0)
+		{
+			// game over
+
+			init(true);	// reset the game data
+
+			sm.change_to(initial);
+
+			return;
+		}
+
+		timer.unlock();
+
+
+		// goal check
+
+		if (g_data.score > g_data.goal)
+		{
+			// goal reached so level is finished
+
+			timer.lock();
+
+			g_data.time += 60;	// resetting the timer
+
+			timer.unlock();
+
+			g_data.goal += g_data.goal * 1.25 + 200;	// increase goal
+		}
+
+
+
 		// ===== taking inputs =====
+
+
+		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
+		{
+			// pause the game
+
+			sm.change_to(initial);
+
+			return;
+		}
 
 
 		// pointer up if pointer is not on the first row
@@ -191,7 +295,7 @@ private:
 		}
 
 
-		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter))
+		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Space))
 		{
 			if (selected == -1)
 			{
@@ -326,10 +430,25 @@ private:
 		{
 			bb::WINDOW.draw(selecter);
 		}
+
+		// rendering the curtain
+
+		if(curtain_active)
+		{
+			tween.lock();
+
+			curtain.setFillColor(sf::Color(255, 255, 255, curtain_alpha));
+
+			tween.unlock();
+
+			bb::WINDOW.draw(curtain);
+		}
 	}
 
 
 
 	void Exit() override
-	{}
+	{
+		timer.stop();
+	}
 } play;

@@ -74,7 +74,7 @@ inline bool bb::Game::Update(double dt)
 {
 	// exit
 
-	if (bb::INPUT.isClosed() || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape) || sm.null_state())
+	if (bb::INPUT.isClosed() || sm.null_state())
 		return STOP_GAME_LOOP;
 
 	

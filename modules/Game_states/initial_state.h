@@ -1,5 +1,6 @@
 #pragma once
 
+extern class play_state play;
 
 class initial_state : public bb::BASE_STATE
 {
@@ -7,15 +8,27 @@ class initial_state : public bb::BASE_STATE
 
 	board_class board;
 
+
 	sf::RectangleShape bg_dimmer;
+	
+	
+	sf::RectangleShape curtain;
+
+	int curtain_alpha;
+
+	TWEENER tween;
+
+
 
 	RoundedRectangle bg_menu;
 
 	bb::MENU<bb::STR_BUTTON> menu;
 
+
 	RoundedRectangle bg_header;
 
 	ColorText header;
+
 
 	
 public:
@@ -23,6 +36,8 @@ public:
 	initial_state() :
 		offset(128, 16),
 		bg_dimmer(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
+		curtain(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
+		curtain_alpha(0),
 		menu(
 			bb::STR_BUTTON::make_menu(
 				medium_text,
@@ -85,10 +100,26 @@ public:
 
 	void Enter() override
 	{
+		curtain_alpha = 0;
 	}
 
 	void Update(double dt) override
 	{
+		if(tween.xfinal())
+		{
+			// xfinal changes the game state, so we return after it's executed
+
+			return;
+		}
+
+		header.updateRS(dt);
+
+		// don't take input when tween operations are running
+
+		if (tween.is_running())
+			return;
+
+
 		auto sel = bb::menu_update(menu);
 
 		/*if (bb::INPUT.isPressed(sf::Keyboard::Scan::Up) || bb::INPUT.isPressed(sf::Keyboard::Scan::Down))
@@ -107,22 +138,34 @@ public:
 
 		// play = 0, high_score = 1, quit = 2
 
-		/*if (sel == 0)
+		if (sel == 0)
 		{
-			game_state.change_to(serve, &i_data);
+			tween.start(
+				1,
+				twn(curtain_alpha, 0, 255),
+				[](double dt)
+				{
+					sm.change_to(play);
+				}
+			);
 		}
 
 		if (sel == 1)
 		{
-			game_state.change_to(highest_score, i_data.highest_score);
-		}*/
+			tween.start(
+				1,
+				twn(curtain_alpha, 0, 255),
+				[](double dt)
+				{
+					sm.change_to(play, true);	// request to start a new game
+				}
+			);
+		}
 
-		if (sel == 3/* || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape)*/)
+		if (sel == 3 || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
 			sm.change_to(bb::NULL_STATE);
 		}
-
-		header.updateRS(dt);
 	}
 
 	void Render() override
@@ -160,6 +203,17 @@ public:
 		// menu
 
 		menu.Render(bb::STR_BUTTON::color);
+
+
+		// rendering the curtain
+		
+		tween.lock();
+
+		curtain.setFillColor(sf::Color(255, 255, 255, curtain_alpha));
+
+		tween.unlock();
+
+		bb::WINDOW.draw(curtain);
 	}
 
 	void Exit() override

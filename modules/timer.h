@@ -516,7 +516,7 @@ class BASE_ASYNCHRONOUS_TIMER
 		set it executes and deletes it
 	*/
 
-	void xfinal() noexcept
+	bool xfinal() noexcept
 	{
 		/*
 			final() is executed only after final_lock is true (final function and it's arg is loaded)
@@ -534,7 +534,11 @@ class BASE_ASYNCHRONOUS_TIMER
 			final_lock = false;
 
 			final_lock.notify_all();
+
+			return true;
 		}
+
+		return false;
 	}
 		
 		
