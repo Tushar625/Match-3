@@ -69,8 +69,6 @@ class play_state : public bb::BASE_STATE
 
 	banner_class banner;
 
-	bool banner_active;
-
 
 
 	// tweener
@@ -182,7 +180,41 @@ public:
 
 
 
-public:
+private:
+
+
+	void level_banner()
+	{
+		banner.start("Level " + std::to_string(g_data.level), [this]()
+			{
+
+				// starting the game timer countdown after banner is down
+
+				timer.start(1, [this](double dt) -> bool
+					{
+						if (g_data.time <= 0)
+						{
+							return false;	// stop the timer
+						}
+
+						g_data.time--;
+
+						return true;	// continue the timer
+					}
+				);
+
+				// pointer blinking
+
+				pointer_color_timer.start(0.5, [this](double dt)
+					{
+						pointer_color = !pointer_color;
+
+						return true;
+					}
+				);
+			}
+		);
+	}
 
 
 
@@ -201,59 +233,7 @@ public:
 
 				// display the banner after the curtain is up
 
-				banner_active = true;
-
-				banner.reset();	// banner placed top the screen
-
-				banner.set_text("Level " + std::to_string(g_data.level));
-
-				tween.start(	// banner comes down to middle of the screen
-					.25,
-					twn(banner.y_pos, float(VIRTUAL_HEIGHT / 2 - banner.get_size().y / 2)),
-					[this](double dt)
-					{
-						after.start(	// banner stays at the middle of the screen for 1 second
-							1,
-							[this](double dt)
-							{
-								tween.start(	// banner comes down to bottom of the screen
-									.25,
-									twn(banner.y_pos, float(VIRTUAL_HEIGHT)),
-									[this](double dt)
-									{
-										banner_active = false;
-
-										// starting the game timer countdown after banner is down
-
-										timer.start(1, [this](double dt) -> bool
-											{
-												if (g_data.time <= 0)
-												{
-													return false;	// stop the timer
-												}
-
-												g_data.time--;
-
-												return true;	// continue the timer
-											}
-										);
-
-										// pointer blinking
-
-										pointer_color_timer.start(0.5, [this](double dt)
-											{
-												pointer_color = !pointer_color;
-
-												return true;
-											}
-										);
-									}
-								);
-
-							}
-						);
-					}
-				);
+				level_banner();
 			}
 		);
 	}
@@ -262,12 +242,13 @@ public:
 
 	void Update(double dt) override
 	{
-		if (banner_active)
+		if (banner.xfinal(dt))
 		{
-			// only banner uses delay timer "after"
+			// returns true once after the banner display operation is finished
 
-			after.update(dt);
+			return;
 		}
+
 
 		if(tween.xfinal())
 		{
@@ -281,7 +262,7 @@ public:
 			or some other visual effects are being displayed
 		*/
 
-		if (tween.is_running() || curtain_active || banner_active)
+		if (tween.is_running() || curtain_active || banner.is_active())
 			return;
 
 
@@ -293,9 +274,30 @@ public:
 		{
 			// game over
 
-			init(true);	// reset the game data
+			pointer_color_timer.stop();	// stop the pointer color blinking
 
-			sm.change_to(initial);
+			banner.start("Game Over", [this]()
+				{
+					// after displaying the game over banner drop the curtain
+
+					curtain_active = true;
+
+					curtain.setFillColor(sf::Color::Black);
+
+					tween.start(
+						1,
+						twn(curtain_alpha, 0, 255),
+						[this](double dt)
+						{
+							curtain_active = false;
+
+							init(true);	// reset the game data
+
+							sm.change_to(initial);
+						}
+					);
+				}
+			);
 
 			return;
 		}
@@ -309,13 +311,23 @@ public:
 		{
 			// goal reached so level is finished
 
-			timer.lock();
+			// stop the game timer and pointer color blinking
+
+			timer.stop();
+
+			pointer_color_timer.stop();
+
+			// update the game data
+
+			g_data.level++;	// increase level
 
 			g_data.time += 60;	// resetting the timer
 
-			timer.unlock();
-
 			g_data.goal += g_data.goal * 1.25 + 200;	// increase goal
+
+			// display the level banner and start the game timer countdown and pointer color blinking
+
+			level_banner();
 		}
 
 
@@ -553,14 +565,7 @@ public:
 
 		// rendering the banner
 
-		if (banner_active)
-		{
-			tween.lock();
-
-			banner.render();
-
-			tween.unlock();
-		}
+		banner.render();
 	}
 
 
@@ -568,5 +573,7 @@ public:
 	void Exit() override
 	{
 		timer.stop();
+
+		pointer_color_timer.stop();
 	}
 } play;

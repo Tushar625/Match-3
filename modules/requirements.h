@@ -34,6 +34,8 @@
 
 #include"score_board.h"
 
+#include"screen_fade.h"
+
 #include"banner.h"
 
 #include"game_states/state_data.h"

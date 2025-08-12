@@ -10,14 +10,6 @@ class initial_state : public bb::BASE_STATE
 
 
 	sf::RectangleShape bg_dimmer;
-	
-	
-	sf::RectangleShape curtain;
-
-	int curtain_alpha;
-
-	TWEENER tween;
-
 
 
 	RoundedRectangle bg_menu;
@@ -30,14 +22,16 @@ class initial_state : public bb::BASE_STATE
 	ColorText header;
 
 
+	ScreenFade screen;	// creates the fade in and fade out effect
+
+
 	
 public:
 
 	initial_state() :
 		offset(128, 16),
 		bg_dimmer(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
-		curtain(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
-		curtain_alpha(0),
+		screen(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
 		menu(
 			bb::STR_BUTTON::make_menu(
 				medium_text,
@@ -100,19 +94,14 @@ public:
 
 	void Enter() override
 	{
-		curtain_alpha = 255;
+		screen.setColor(sf::Color::Black);
 
-		curtain.setFillColor(sf::Color::Black);
-
-		tween.start(
-			1,
-			twn(curtain_alpha, 255, 0)
-		);
+		screen.startFadeIn();
 	}
 
 	void Update(double dt) override
 	{
-		if(tween.xfinal())
+		if(screen.xfinal())
 		{
 			// xfinal changes the game state, so we return after it's executed
 
@@ -123,7 +112,7 @@ public:
 
 		// don't take input when tween operations are running
 
-		if (tween.is_running())
+		if (screen.isActive())
 			return;
 
 
@@ -147,44 +136,23 @@ public:
 
 		if (sel == 0)
 		{
-			curtain.setFillColor(sf::Color::White);
+			screen.setColor(sf::Color::White);
 
-			tween.start(
-				1,
-				twn(curtain_alpha, 0, 255),
-				[](double dt)
-				{
-					sm.change_to(play);
-				}
-			);
+			screen.startFadeOut([](){ sm.change_to(play); });
 		}
 
 		if (sel == 1)
 		{
-			curtain.setFillColor(sf::Color::White);
+			screen.setColor(sf::Color::White);
 
-			tween.start(
-				1,
-				twn(curtain_alpha, 0, 255),
-				[](double dt)
-				{
-					sm.change_to(play, true);	// request to start a new game
-				}
-			);
+			screen.startFadeOut([]() { sm.change_to(play, true); });
 		}
 
 		if (sel == 3 || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
-			curtain.setFillColor(sf::Color::Black);
+			screen.setColor(sf::Color::Black);
 
-			tween.start(
-				1,
-				twn(curtain_alpha, 0, 255),
-				[](double dt)
-				{
-					sm.change_to(bb::NULL_STATE);	// exit game
-				}
-			);
+			screen.startFadeOut([]() { sm.change_to(bb::NULL_STATE); });
 		}
 	}
 
@@ -227,17 +195,7 @@ public:
 
 		// rendering the curtain
 		
-		tween.lock();
-
-		auto color = curtain.getFillColor();
-
-		color.a = curtain_alpha;
-
-		curtain.setFillColor(sf::Color(color));
-
-		tween.unlock();
-
-		bb::WINDOW.draw(curtain);
+		screen.render();
 	}
 
 	void Exit() override
