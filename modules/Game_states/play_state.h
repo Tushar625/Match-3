@@ -171,6 +171,8 @@ public:
 	{
 		curtain_active = true;
 
+		curtain.setFillColor(sf::Color::White);
+
 		tween.start(
 			1,
 			twn(curtain_alpha, 255, 0),
@@ -202,7 +204,10 @@ public:
 	{
 		// don't allow any input or processing operations, when the tween thread is running
 
-		tween.xfinal();
+		if(tween.xfinal())
+		{
+			return;
+		}
 
 		// don't take input when tween operations are running
 
@@ -252,7 +257,20 @@ public:
 		{
 			// pause the game
 
-			sm.change_to(initial);
+			curtain_active = true;
+
+			curtain.setFillColor(sf::Color::Black);
+
+			tween.start(
+				1,
+				twn(curtain_alpha, 0, 255),
+				[this](double dt)
+				{
+					curtain_active = false;
+
+					sm.change_to(initial);
+				}
+			);
 
 			return;
 		}
@@ -437,7 +455,11 @@ public:
 		{
 			tween.lock();
 
-			curtain.setFillColor(sf::Color(255, 255, 255, curtain_alpha));
+			auto color = curtain.getFillColor();
+
+			color.a = curtain_alpha;
+
+			curtain.setFillColor(sf::Color(color));
 
 			tween.unlock();
 

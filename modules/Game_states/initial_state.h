@@ -100,7 +100,14 @@ public:
 
 	void Enter() override
 	{
-		curtain_alpha = 0;
+		curtain_alpha = 255;
+
+		curtain.setFillColor(sf::Color::Black);
+
+		tween.start(
+			1,
+			twn(curtain_alpha, 255, 0)
+		);
 	}
 
 	void Update(double dt) override
@@ -140,6 +147,8 @@ public:
 
 		if (sel == 0)
 		{
+			curtain.setFillColor(sf::Color::White);
+
 			tween.start(
 				1,
 				twn(curtain_alpha, 0, 255),
@@ -152,6 +161,8 @@ public:
 
 		if (sel == 1)
 		{
+			curtain.setFillColor(sf::Color::White);
+
 			tween.start(
 				1,
 				twn(curtain_alpha, 0, 255),
@@ -164,7 +175,16 @@ public:
 
 		if (sel == 3 || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
-			sm.change_to(bb::NULL_STATE);
+			curtain.setFillColor(sf::Color::Black);
+
+			tween.start(
+				1,
+				twn(curtain_alpha, 0, 255),
+				[](double dt)
+				{
+					sm.change_to(bb::NULL_STATE);	// exit game
+				}
+			);
 		}
 	}
 
@@ -209,7 +229,11 @@ public:
 		
 		tween.lock();
 
-		curtain.setFillColor(sf::Color(255, 255, 255, curtain_alpha));
+		auto color = curtain.getFillColor();
+
+		color.a = curtain_alpha;
+
+		curtain.setFillColor(sf::Color(color));
 
 		tween.unlock();
 
