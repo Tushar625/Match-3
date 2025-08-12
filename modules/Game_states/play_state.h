@@ -35,6 +35,8 @@ class play_state : public bb::BASE_STATE
 
 	RoundedRectangle pointer;	// to draw the pointer on the screen
 
+	bool pointer_color;	// decide the pointer color
+
 
 
 	// selection data
@@ -61,6 +63,16 @@ class play_state : public bb::BASE_STATE
 
 
 
+	/*
+		to show the level banner, like "Level 1"
+	*/
+
+	banner_class banner;
+
+	bool banner_active;
+
+
+
 	// tweener
 
 	TWEENER tween;
@@ -69,7 +81,15 @@ class play_state : public bb::BASE_STATE
 
 	// interval timer
 
-	INTERVAL_TIMER timer;
+	INTERVAL_TIMER timer;	// decreases the timer of game data every second
+	
+	INTERVAL_TIMER pointer_color_timer;	// to change the pointer color periodically, to make it blink
+
+
+
+	// delay timer
+
+	DELAY_TIMER after;
 
 
 
@@ -82,6 +102,7 @@ public:
 		score_board(sf::Vector2f(24, 24)),
 		offset(sf::Vector2f(VIRTUAL_WIDTH - 272, 16)),
 		point(0),
+		pointer_color(false),
 		selected(-1),	// initializing the pointer and selecter
 		curtain(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
 		curtain_alpha(0),
@@ -95,9 +116,7 @@ public:
 
 		pointer.setFillColor(sf::Color::Transparent);
 
-		pointer.setOutlineColor(sf::Color::Red);
-
-		pointer.setOutlineThickness(3);
+		pointer.setOutlineThickness(4);
 
 		pointer.setRadius(6);
 
@@ -173,25 +192,66 @@ public:
 
 		curtain.setFillColor(sf::Color::White);
 
-		tween.start(
+		tween.start(	// pulling up the curtain
 			1,
 			twn(curtain_alpha, 255, 0),
 			[this](double dt)
 			{
 				curtain_active = false;
 
-				// starting the game timer countdown after teh curtain is up
+				// display the banner after the curtain is up
 
-				timer.start(1, [this](double dt) -> bool
+				banner_active = true;
+
+				banner.reset();	// banner placed top the screen
+
+				banner.set_text("Level " + std::to_string(g_data.level));
+
+				tween.start(	// banner comes down to middle of the screen
+					.25,
+					twn(banner.y_pos, float(VIRTUAL_HEIGHT / 2 - banner.get_size().y / 2)),
+					[this](double dt)
 					{
-						if (g_data.time <= 0)
-						{
-							return false;	// stop the timer
-						}
+						after.start(	// banner stays at the middle of the screen for 1 second
+							1,
+							[this](double dt)
+							{
+								tween.start(	// banner comes down to bottom of the screen
+									.25,
+									twn(banner.y_pos, float(VIRTUAL_HEIGHT)),
+									[this](double dt)
+									{
+										banner_active = false;
 
-						g_data.time--;
+										// starting the game timer countdown after banner is down
 
-						return true;	// continue the timer
+										timer.start(1, [this](double dt) -> bool
+											{
+												if (g_data.time <= 0)
+												{
+													return false;	// stop the timer
+												}
+
+												g_data.time--;
+
+												return true;	// continue the timer
+											}
+										);
+
+										// pointer blinking
+
+										pointer_color_timer.start(0.5, [this](double dt)
+											{
+												pointer_color = !pointer_color;
+
+												return true;
+											}
+										);
+									}
+								);
+
+							}
+						);
 					}
 				);
 			}
@@ -202,16 +262,26 @@ public:
 
 	void Update(double dt) override
 	{
-		// don't allow any input or processing operations, when the tween thread is running
+		if (banner_active)
+		{
+			// only banner uses delay timer "after"
+
+			after.update(dt);
+		}
 
 		if(tween.xfinal())
 		{
+			// final() of tween may change the state, in other cases there's no harm in return
+
 			return;
 		}
 
-		// don't take input when tween operations are running
+		/*
+			don't allow any input or processing operations, when the tween thread is running
+			or some other visual effects are being displayed
+		*/
 
-		if (tween.is_running())
+		if (tween.is_running() || curtain_active || banner_active)
 			return;
 
 
@@ -251,6 +321,7 @@ public:
 
 
 		// ===== taking inputs =====
+
 
 
 		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
@@ -430,6 +501,7 @@ public:
 
 		timer.unlock();
 
+
 		// safely access the data being tweened using lock() and unlock()
 
 		tween.lock();
@@ -438,9 +510,22 @@ public:
 
 		tween.unlock();
 
+
 		// always draw the pointer on the selected brick
 
+		pointer_color_timer.lock();
+
+		// render select rect color based on timer
+		
+		if (pointer_color)
+			pointer.setOutlineColor(sf::Color(217, 87, 99, 255));
+		else
+			pointer.setOutlineColor(sf::Color(172, 50, 50, 255));
+
+		pointer_color_timer.unlock();
+
 		bb::WINDOW.draw(pointer);
+
 
 		// if a brick is selected, draw the selecter on it
 
@@ -464,6 +549,17 @@ public:
 			tween.unlock();
 
 			bb::WINDOW.draw(curtain);
+		}
+
+		// rendering the banner
+
+		if (banner_active)
+		{
+			tween.lock();
+
+			banner.render();
+
+			tween.unlock();
 		}
 	}
 

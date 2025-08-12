@@ -997,7 +997,7 @@ public:
 		and calls the callback function when the duration is over
 	*/
 	
-	void update(double dt) noexcept
+	bool update(double dt) noexcept
 	{
 		if (running)
 		{
@@ -1008,8 +1008,12 @@ public:
 				callback(elapsed_time);
 
 				running = false;	// stop the update loop
+
+				return true;	// final is executed
 			}
 		}
+
+		return false;	// final is not executed
 	}
 
 

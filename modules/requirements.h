@@ -34,6 +34,8 @@
 
 #include"score_board.h"
 
+#include"banner.h"
+
 #include"game_states/state_data.h"
 
 #include"game_states/initial_state.h"
