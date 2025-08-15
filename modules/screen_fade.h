@@ -86,13 +86,16 @@ public:
 	}
 
 
+	// operational methods
+
+
 	bool isActive() const noexcept
 	{
 		return m_active;
 	}
 
 
-	bool startFadeIn(std::function<void(void)> final_func = nullptr) noexcept
+	bool startFadeIn(std::function<void(void)> final = nullptr) noexcept
 	{
 		if(m_active)
 		{
@@ -102,15 +105,15 @@ public:
 		m_active = true;
 
 		m_tween.start(
-			1,
+			m_duration,
 			twn(m_alpha, (uint8_t)255, (uint8_t)0),
-			[this, final_func](double dt)
+			[this, final](double dt)
 			{
 				m_active = false;
 
-				if (final_func)
+				if (final)
 				{
-					final_func();
+					final();
 				}
 			}
 		);
@@ -119,7 +122,7 @@ public:
 	}
 
 
-	bool startFadeOut(std::function<void(void)> final_func = nullptr) noexcept
+	bool startFadeOut(std::function<void(void)> final = nullptr) noexcept
 	{
 		if (m_active)
 		{
@@ -129,15 +132,15 @@ public:
 		m_active = true;
 
 		m_tween.start(
-			1,
+			m_duration,
 			twn(m_alpha, (uint8_t)0, (uint8_t)255),
-			[this, final_func](double dt)
+			[this, final](double dt)
 			{
 				m_active = false;
 
-				if (final_func)
+				if (final)
 				{
-					final_func();
+					final();
 				}
 			}
 		);

@@ -1,214 +1,288 @@
 #pragma once
 
 
-/*class banner_class
+
+
+
+
+class Banner
 {
-	sf::Text text;
-	sf::Vector2f pos;
-	sf::RectangleShape board;
+	sf::Text m_text;
+	
+	sf::RectangleShape m_bg;
+
+
+	double m_fallDuration;	// duration of the fall animation, from top to middle, and middle to bottom
+	
+	double m_pauseDuration;	// duration of the pause after the banner reaches the middle of the screen
+
+	float m_yPos;	//y position of the banner, it's tweened to make the banner fall through the screen
+
+	float m_screenHeight;	// height of the screen, used to calculate the final position of the banner
+
+	bool m_active;	// indicates if the banner animation is running or not
+
+
+	TWEENER m_tween;
+
+	DELAY_TIMER m_after;
+
 
 
 public:
 
 
-	float y_pos;
 
+	/*
+		constructor, initializes the banner with the given text, background size,
+		screen height, text color and background color
+	*/
 
-	banner_class()
+	Banner(const sf::Text& text, const sf::Vector2f& bgSize, float screenHeight, const sf::Color& textColor = sf::Color::White, const sf::Color& bgColor = sf::Color::Black) :
+		m_text(text),
+		m_bg(bgSize),
+		m_fallDuration(.25),	// default fall duration is 0.25 seconds
+		m_pauseDuration(1),		// default pause duration is 1 second
+		m_yPos(-bgSize.y),		// "-bgSize.y", a position above the top edge of the screen
+		m_screenHeight(screenHeight),
+		m_active(false)
 	{
-		// initialize the banner with large text and a rectangle shape as wide as the screen
-
-		text = large_text;
-
-		text.setFillColor(sf::Color(255, 255, 255));
-
-
-		board.setSize(sf::Vector2f(VIRTUAL_WIDTH, BRICK_HEIGHT * 1.5));
-
-		board.setFillColor(sf::Color(95, 205, 228, 200));
-
-
-		reset();	// place the banner at the top of the screen
+		m_text.setFillColor(textColor);
+		
+		m_bg.setFillColor(bgColor);
 	}
 
 
-	// set the y position of the banner, top of the screen
+	
+	// the setters
 
-	void reset()
+
+
+	void setTextColor(const sf::Color& textColor) noexcept
 	{
-		y_pos = -board.getSize().y;
+		m_text.setFillColor(textColor);
 	}
 
 
-	void set_text(const std::string& str)
+	void setBgColor(const sf::Color& bgColor) noexcept
 	{
-		// setting new text string and set the origin at the center
-
-		text.setString(str);
-
-		bb::setCenterOrigin(text);
+		m_text.setFillColor(bgColor);
 	}
 
 
-	sf::Vector2f get_size() const
+	void setBgSize(const sf::Vector2f& bgSize) noexcept
 	{
-		return board.getSize();
+		m_bg.setSize(bgSize);
 	}
 
 
-	void render()
+	void setScreenHeight(float screenHeight) noexcept
 	{
-		/*
-			origin of the board is at the top left corner, but the origin of the
-			text is at its center
-		/
-
-		board.setPosition(sf::Vector2f(0, y_pos));
-
-		bb::WINDOW.draw(board);
-
-		text.setPosition(sf::Vector2f(VIRTUAL_WIDTH / 2, y_pos + board.getSize().y / 2));
-
-		bb::WINDOW.draw(text);
-	}
-};*/
-
-
-
-class banner_class
-{
-	sf::Text text;
-	sf::Vector2f pos;
-	sf::RectangleShape board;
-	float y_pos;
-
-	TWEENER tween;
-	DELAY_TIMER after;
-
-
-	bool banner_active;	// indicates if the banner is active or not
-
-
-public:
-
-
-	banner_class() : banner_active(false)
-	{
-		// initialize the banner with large text and a rectangle shape as wide as the screen
-
-		text = large_text;
-
-		text.setFillColor(sf::Color(255, 255, 255));
-
-
-		board.setSize(sf::Vector2f(VIRTUAL_WIDTH, BRICK_HEIGHT * 1.5));
-
-		board.setFillColor(sf::Color(95, 205, 228, 200));
-
-
-		reset();	// place the banner at the top of the screen
+		m_screenHeight = screenHeight;
 	}
 
 
-	// set the y position of the banner, top of the screen
-
-	void reset()
+	void setFallDuration(double fallDuration) noexcept
 	{
-		y_pos = -board.getSize().y;
+		m_fallDuration = fallDuration;
 	}
 
 
-	void set_text(const std::string& str)
+	void setPauseDuration(double pauseDuration) noexcept
 	{
-		// setting new text string and set the origin at the center
-
-		text.setString(str);
-
-		bb::setCenterOrigin(text);
+		m_pauseDuration = pauseDuration;
 	}
 
 
-	sf::Vector2f get_size() const
+	
+	// the getters
+
+
+
+	const sf::Color& getTextColor() const noexcept
 	{
-		return board.getSize();
+		return m_text.getFillColor();
 	}
 
 
-	void start(const std::string& str, std::function<void(void)> final_func)
+	const sf::Color& getBgColor() const noexcept
 	{
-		banner_active = true;
+		return m_bg.getFillColor();
+	}
 
-		reset();	// banner placed top the screen
 
-		set_text(str);
+	const sf::Vector2f& getBgSize() const noexcept
+	{
+		return m_bg.getSize();
+	}
 
-		tween.start(	// banner comes down to middle of the screen
-			.25,
-			twn(y_pos, float(VIRTUAL_HEIGHT / 2 - get_size().y / 2)),
-			[this, final_func](double dt)
+
+	float getScreenHeight() const noexcept
+	{
+		return m_screenHeight;
+	}
+
+
+	double getFallDuration() const noexcept
+	{
+		return m_fallDuration;
+	}
+
+
+	double getPauseDuration() const noexcept
+	{
+		return m_pauseDuration;
+	}
+
+
+
+	// directly access the text and bg rectangle
+
+
+
+	sf::Text& text() noexcept
+	{
+		return m_text;
+	}
+
+
+	sf::RectangleShape& bg() noexcept
+	{
+		return m_bg;
+	}
+
+
+
+	// main operational methods
+
+
+
+	/*
+		start the animation with the given string, and an optional final function
+		to execute after the animation is over
+
+		returns true if the animation is started successfully, false if the animation is already running
+	*/
+
+	bool startAnimation(const std::string& str, std::function<void(void)> final = nullptr)
+	{
+		if (m_active)
+		{
+			return false;	// already active
+		}
+
+		m_active = true;
+
+		m_text.setString(str);	// set banner string
+
+		bb::setCenterOrigin(m_text);	// center origin the string
+
+		m_tween.start(
+			
+			m_fallDuration,
+			
+			// place the banner beyond top edge of the screen and bring it down to middle of the screen
+			
+			twn(m_yPos, -m_bg.getSize().y, float(m_screenHeight / 2.0 - m_bg.getSize().y / 2)),
+
+			[this, final](double dt)
 			{
-				after.start(	// banner stays at the middle of the screen for 1 second
-					1,
-					[this, final_func](double dt)
+				// after the banner reaches the middle, it pauses for 1 second before it falls down
+
+				m_after.start(
+					
+					m_pauseDuration,
+					
+					[this, final](double dt)
 					{
-						tween.start(	// banner comes down to bottom of the screen
-							.25,
-							twn(y_pos, float(VIRTUAL_HEIGHT)),
-							[this, final_func](double dt)
+						// after the pause, we start the tween to bring the banner down
+
+						m_tween.start(
+							
+							m_fallDuration,
+
+							// banner falls beyond the bottom edge of the screen
+							
+							twn(m_yPos, float(m_screenHeight)),
+
+							[this, final](double dt)
 							{
-								banner_active = false;
+								// the animation is over
 
-								// execite the final function after banner is down
+								m_active = false;
 
-								final_func();
+								// execute the final function after the animation is over
+
+								if (final)
+								{
+									final();
+								}
 							}
 						);
 					}
 				);
 			}
 		);
+
+		return true;
 	}
 
+
+	/*
+		execute the final() function after the banner animation is over
+
+		returns true only when final() is executed after the banner animation is over
+	*/
 
 	bool xfinal(double dt)
 	{
-		if (banner_active)
+		if (m_active)
 		{
-			after.update(dt);
+			m_after.update(dt);
 
-			return tween.xfinal() && !banner_active;
+			/*
+				return true only after the banner animation is over
+
+				after the animation is over, xfinal() of tween returns true and sets m_active to false,
+				so this function returns true
+			*/
+
+			return m_tween.xfinal() && !m_active;
 		}
+
+		return false;
 	}
 
 
-	bool is_active() const noexcept
+	// check if the animation is running or not
+
+	bool isActive() const noexcept
 	{
-		return banner_active;
+		return m_active;
 	}
 
+
+	// render the banner when the animation is running
 
 	void render()
 	{
-		if (!banner_active)
+		if (m_active)
 		{
-			return;	// no need to render if the banner is not active
+			m_tween.lock();
+
+			// origin of the bg rectangle is at the top left corner
+
+			m_bg.setPosition(sf::Vector2f(0, m_yPos));
+
+			// origin of the text is at its center, we place the text in the middle of the bg rectangle
+
+			m_text.setPosition(sf::Vector2f(m_bg.getSize().x / 2, m_yPos + m_bg.getSize().y / 2));
+
+			m_tween.unlock();
+
+			bb::WINDOW.draw(m_bg);
+
+			bb::WINDOW.draw(m_text);
 		}
-
-		tween.lock();
-
-		/*
-			origin of the board is at the top left corner, but the origin of the
-			text is at its center
-		*/
-
-		board.setPosition(sf::Vector2f(0, y_pos));
-
-		bb::WINDOW.draw(board);
-
-		text.setPosition(sf::Vector2f(VIRTUAL_WIDTH / 2, y_pos + board.getSize().y / 2));
-
-		bb::WINDOW.draw(text);
-
-		tween.unlock();
 	}
 };

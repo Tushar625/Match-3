@@ -72,15 +72,14 @@ inline bool bb::Game::Create()
 
 inline bool bb::Game::Update(double dt)
 {
+	sm.Update(dt);
+
+	bg.update(dt);
+
 	// exit
 
 	if (bb::INPUT.isClosed() || sm.null_state())
 		return STOP_GAME_LOOP;
-
-	
-	sm.Update(dt);
-
-	bg.update(dt);
 
 
 	return !STOP_GAME_LOOP;

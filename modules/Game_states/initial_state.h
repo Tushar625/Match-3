@@ -94,6 +94,8 @@ public:
 
 	void Enter() override
 	{
+		// initial state emarges from dark, the fade in effect
+
 		screen.setColor(sf::Color::Black);
 
 		screen.startFadeIn();
@@ -136,6 +138,8 @@ public:
 
 		if (sel == 0)
 		{
+			// fade out effect the screen goes white
+
 			screen.setColor(sf::Color::White);
 
 			screen.startFadeOut([](){ sm.change_to(play); });
@@ -143,13 +147,17 @@ public:
 
 		if (sel == 1)
 		{
+			// fade out effect the screen goes white
+
 			screen.setColor(sf::Color::White);
 
-			screen.startFadeOut([]() { sm.change_to(play, true); });
+			screen.startFadeOut([]() { sm.change_to(play, true); });	// true, forces play state to reset its data
 		}
 
 		if (sel == 3 || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
+			// fade out effect the screen goes black slowly, before the game quites
+
 			screen.setColor(sf::Color::Black);
 
 			screen.startFadeOut([]() { sm.change_to(bb::NULL_STATE); });

@@ -52,14 +52,10 @@ class play_state : public bb::BASE_STATE
 
 
 	/*
-		used to create curtain effect
+		used to create fade in/out effect
 	*/
 
-	sf::RectangleShape curtain;
-
-	int curtain_alpha;
-
-	bool curtain_active;
+	ScreenFade screen;	// creates the fade in and fade out effect
 
 
 
@@ -67,7 +63,7 @@ class play_state : public bb::BASE_STATE
 		to show the level banner, like "Level 1"
 	*/
 
-	banner_class banner;
+	Banner banner;
 
 
 
@@ -102,9 +98,14 @@ public:
 		point(0),
 		pointer_color(false),
 		selected(-1),	// initializing the pointer and selecter
-		curtain(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
-		curtain_alpha(0),
-		curtain_active(false)
+		screen(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
+		banner(
+			large_text,
+			sf::Vector2f(VIRTUAL_WIDTH, BRICK_HEIGHT * 1.5),
+			VIRTUAL_HEIGHT,
+			sf::Color(255, 255, 255),
+			sf::Color(95, 205, 228, 200)
+		)
 	{
 		// preparing the pointer, an empty rounded rectangle
 
@@ -185,9 +186,8 @@ private:
 
 	void level_banner()
 	{
-		banner.start("Level " + std::to_string(g_data.level), [this]()
+		banner.startAnimation("Level " + std::to_string(g_data.level), [this]()
 			{
-
 				// starting the game timer countdown after banner is down
 
 				timer.start(1, [this](double dt) -> bool
@@ -220,22 +220,11 @@ private:
 
 	void Enter() override
 	{
-		curtain_active = true;
+		// play state emarges from light, the fade in effect
 
-		curtain.setFillColor(sf::Color::White);
+		screen.setColor(sf::Color::White);
 
-		tween.start(	// pulling up the curtain
-			1,
-			twn(curtain_alpha, 255, 0),
-			[this](double dt)
-			{
-				curtain_active = false;
-
-				// display the banner after the curtain is up
-
-				level_banner();
-			}
-		);
+		screen.startFadeIn([this]() {level_banner(); });
 	}
 
 
@@ -249,6 +238,12 @@ private:
 			return;
 		}
 
+		if (screen.xfinal())
+		{
+			// xfinal changes the game state, so we return after it's executed
+
+			return;
+		}
 
 		if(tween.xfinal())
 		{
@@ -262,7 +257,7 @@ private:
 			or some other visual effects are being displayed
 		*/
 
-		if (tween.is_running() || curtain_active || banner.is_active())
+		if (tween.is_running() || screen.isActive() || banner.isActive())
 			return;
 
 
@@ -276,26 +271,18 @@ private:
 
 			pointer_color_timer.stop();	// stop the pointer color blinking
 
-			banner.start("Game Over", [this]()
+			banner.startAnimation("Game Over", [this]()
 				{
-					// after displaying the game over banner drop the curtain
+					/*
+						after displaying the game over banner, start a fade out effect
+						the screen goes black slowly
+					*/
 
-					curtain_active = true;
+					screen.setColor(sf::Color::Black);
 
-					curtain.setFillColor(sf::Color::Black);
+					//screen.setColor(sf::Color(217, 87, 99, 255));
 
-					tween.start(
-						1,
-						twn(curtain_alpha, 0, 255),
-						[this](double dt)
-						{
-							curtain_active = false;
-
-							init(true);	// reset the game data
-
-							sm.change_to(initial);
-						}
-					);
+					screen.startFadeOut([this]() { init(true); /* reset the game data*/ sm.change_to(initial); });
 				}
 			);
 
@@ -340,20 +327,11 @@ private:
 		{
 			// pause the game
 
-			curtain_active = true;
+			// fade out effect the screen goes black slowly
 
-			curtain.setFillColor(sf::Color::Black);
+			screen.setColor(sf::Color::Black);
 
-			tween.start(
-				1,
-				twn(curtain_alpha, 0, 255),
-				[this](double dt)
-				{
-					curtain_active = false;
-
-					sm.change_to(initial);
-				}
-			);
+			screen.startFadeOut([this]() { sm.change_to(initial); });
 
 			return;
 		}
@@ -396,7 +374,7 @@ private:
 		}
 
 
-		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Space))
+		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter))
 		{
 			if (selected == -1)
 			{
@@ -546,22 +524,9 @@ private:
 			bb::WINDOW.draw(selecter);
 		}
 
-		// rendering the curtain
+		// rendering the screen fade effects
 
-		if(curtain_active)
-		{
-			tween.lock();
-
-			auto color = curtain.getFillColor();
-
-			color.a = curtain_alpha;
-
-			curtain.setFillColor(sf::Color(color));
-
-			tween.unlock();
-
-			bb::WINDOW.draw(curtain);
-		}
+		screen.render();
 
 		// rendering the banner
 
