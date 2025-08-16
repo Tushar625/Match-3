@@ -78,9 +78,15 @@ inline bool bb::Game::Update(double dt)
 
 	// exit
 
-	if (bb::INPUT.isClosed() || sm.null_state())
-		return STOP_GAME_LOOP;
+	// when the game window is closed change to null state to close current state properly
 
+	if (bb::INPUT.isClosed())
+		sm.change_to(bb::NULL_STATE);
+
+	// if null state is detected exit
+
+	if (sm.null_state())
+		return STOP_GAME_LOOP;
 
 	return !STOP_GAME_LOOP;
 }

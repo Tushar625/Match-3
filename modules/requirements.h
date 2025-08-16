@@ -6,8 +6,6 @@
 
 #include"BBS\asset\text\all.h"
 
-#include"timer.h"
-
 #include"rounded_rectangle.h"
 
 #include"BBS\asset\SFML_Text\tools.h"

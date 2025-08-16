@@ -289,9 +289,9 @@ public:
 	}
 
 
-	MULTI_TWN<float> fill_matches()
+	bb::MULTI_TWN<float> fill_matches()
 	{
-		MULTI_TWN<float> twn_vector;
+		bb::MULTI_TWN<float> twn_vector;
 
 
 

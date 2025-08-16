@@ -2,7 +2,27 @@
 
 
 
+/*
+	this class is used to create a banner that falls from the top of the screen and
+	pauses in the middle of the screen for a specified duration before falling beyond
+	the bottom edge of the screen,
+	
+	the banner consists of a text placed in the middle of a rectangular background,
 
+	it can be used to display messages like "Level Up", "Game Over", "You Win", etc.
+
+	Example usage:
+
+
+
+	Banner banner(
+		large_text,
+		sf::Vector2f(400, 100),
+		VIRTUAL_HEIGHT,
+		sf::Color::White,
+		sf::Color::Black
+	);
+*/
 
 
 class Banner
@@ -23,9 +43,9 @@ class Banner
 	bool m_active;	// indicates if the banner animation is running or not
 
 
-	TWEENER m_tween;
+	bb::TWEENER m_tween;
 
-	DELAY_TIMER m_after;
+	bb::DELAY_TIMER m_after;
 
 
 
@@ -183,7 +203,7 @@ public:
 			
 			// place the banner beyond top edge of the screen and bring it down to middle of the screen
 			
-			twn(m_yPos, -m_bg.getSize().y, float(m_screenHeight / 2.0 - m_bg.getSize().y / 2)),
+			bb::twn(m_yPos, -m_bg.getSize().y, float(m_screenHeight / 2.0 - m_bg.getSize().y / 2)),
 
 			[this, final](double dt)
 			{
@@ -203,7 +223,7 @@ public:
 
 							// banner falls beyond the bottom edge of the screen
 							
-							twn(m_yPos, float(m_screenHeight)),
+							bb::twn(m_yPos, float(m_screenHeight)),
 
 							[this, final](double dt)
 							{
@@ -251,6 +271,16 @@ public:
 		}
 
 		return false;
+	}
+
+
+	// stop the banner animation immediately, without calling final() function
+
+	void stop() noexcept
+	{
+		m_active = false;
+		m_tween.stop();
+		m_after.stop();
 	}
 
 

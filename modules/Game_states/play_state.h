@@ -69,21 +69,21 @@ class play_state : public bb::BASE_STATE
 
 	// tweener
 
-	TWEENER tween;
+	bb::TWEENER tween;
 
 
 
 	// interval timer
 
-	INTERVAL_TIMER timer;	// decreases the timer of game data every second
+	bb::INTERVAL_TIMER timer;	// decreases the timer of game data every second
 	
-	INTERVAL_TIMER pointer_color_timer;	// to change the pointer color periodically, to make it blink
+	bb::INTERVAL_TIMER pointer_color_timer;	// to change the pointer color periodically, to make it blink
 
 
 
 	// delay timer
 
-	DELAY_TIMER after;
+	bb::DELAY_TIMER after;
 
 
 
@@ -261,6 +261,32 @@ private:
 			return;
 
 
+		// goal check
+
+		if (g_data.score > g_data.goal)
+		{
+			// goal reached so level is finished
+
+			// stop the game timer and pointer color blinking
+
+			timer.stop();
+
+			pointer_color_timer.stop();
+
+			// update the game data
+
+			g_data.level++;	// increase level
+
+			g_data.time += 60;	// resetting the timer
+
+			g_data.goal += g_data.goal * 1.25 + 200;	// increase goal
+
+			// display the level banner and start the game timer countdown and pointer color blinking
+
+			level_banner();
+		}
+
+
 		// remaining time check
 
 		timer.lock();
@@ -290,32 +316,6 @@ private:
 		}
 
 		timer.unlock();
-
-
-		// goal check
-
-		if (g_data.score > g_data.goal)
-		{
-			// goal reached so level is finished
-
-			// stop the game timer and pointer color blinking
-
-			timer.stop();
-
-			pointer_color_timer.stop();
-
-			// update the game data
-
-			g_data.level++;	// increase level
-
-			g_data.time += 60;	// resetting the timer
-
-			g_data.goal += g_data.goal * 1.25 + 200;	// increase goal
-
-			// display the level banner and start the game timer countdown and pointer color blinking
-
-			level_banner();
-		}
 
 
 
@@ -373,51 +373,70 @@ private:
 			set_pointer_pos(board[point].pos);
 		}
 
+		// checking which brick is pointed by the mouse pointer
 
-		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter))
+		auto pointM = mouse_on_brick(bb::INPUT.pointer().x, bb::INPUT.pointer().y);
+
+		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || (pointM != -1 && bb::INPUT.isPressedM(sf::Mouse::Button::Left)))
 		{
+			int pointed;
+
+			if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter))
+			{
+				// pointing a brick using keyboard
+
+				pointed = point;	// use the pointed brick
+			}
+
+			if (pointM != -1 && bb::INPUT.isPressedM(sf::Mouse::Button::Left))
+			{
+				// pointing a brick using mouse
+
+				pointed = pointM;	// use the brick under the mouse pointer
+			}
+
 			if (selected == -1)
 			{
 				// nothing is selected currently so select the pointed brick
 
-				set_selecter_pos(board[point].pos);
+				set_selecter_pos(board[pointed].pos);
 
-				selected = point;
+				selected = pointed;
 			}
-			else if (selected == point)
+			else if (selected == pointed)
 			{
 				selected = -1;	// deselect the selected brick
 			}
-			else if (adj_brick(selected, point))
+			else if (adj_brick(selected, pointed))
 			{
 				// swapping the selected brick with the pointed brick
 
 				// swap bricks in brickmap vector
 
-				auto temp = board[point];
+				auto temp = board[pointed];
 
-				board[point] = board[selected];
+				board[pointed] = board[selected];
 
 				board[selected] = temp;
 
 				// swaping brickmap indices
 
-				board[point].index = point;
+				board[pointed].index = pointed;
 
 				board[selected].index = selected;
 
 				// swap positions of the bricks on screen with tween animation
 
-				auto& pos_p = board[point].pos;
+				auto& pos_p = board[pointed].pos;
 
 				auto& pos_s = board[selected].pos;
 
 				tween.start(.2,
-					twn_list(
-						twn(pos_p.x, pos_s.x),
-						twn(pos_p.y, pos_s.y),
-						twn(pos_s.x, pos_p.x),
-						twn(pos_s.y, pos_p.y)
+					bb::twn_list(
+						bb::twn(pos_p.x, pos_s.x),
+						bb::twn(pos_p.y, pos_s.y),
+						bb::twn(pos_s.x, pos_p.x),
+						bb::twn(pos_s.y, pos_p.y)
 					),
 					[this](double dt)
 					{
@@ -439,6 +458,24 @@ private:
 		return ((selected / GRID_WIDTH == pointed / GRID_WIDTH) && std::abs(selected - pointed) == 1) || std::abs(selected - pointed) == GRID_WIDTH;
 	}
 
+
+	bool mouse_on_brickmap(int x, int y)
+	{
+		return bb::in_rng(offset.x, (float)x, offset.x + GRID_WIDTH * BRICK_WIDTH - 1) && bb::in_rng(offset.y, (float)y, offset.y + GRID_HEIGHT * BRICK_HEIGHT - 1);
+	}
+
+
+	int mouse_on_brick(int x, int y)
+	{
+		if (!mouse_on_brickmap(x, y))
+			return -1;	// mouse is not on the brickmap
+
+		int mx = (x - (int)offset.x) / BRICK_WIDTH;
+
+		int my = (y - (int)offset.y) / BRICK_HEIGHT;
+		
+		return my * GRID_WIDTH + mx;	// return the index of the brick under the mouse
+	}
 
 
 	/*
