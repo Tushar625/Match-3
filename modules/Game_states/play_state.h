@@ -231,7 +231,7 @@ private:
 
 	void Update(double dt) override
 	{
-		if (banner.xfinal(dt))
+		if (banner.xfinalUpdate(dt))
 		{
 			// returns true once after the banner display operation is finished
 

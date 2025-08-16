@@ -2,13 +2,15 @@
 
 #include"BBS\game.h"	// mention path to game.h
 
+#include"BBS\asset\effect\banner.h"
+
+#include"BBS\asset\effect\screen_fade.h"
+
 #include"BBS\asset\button\all.h"
 
 #include"BBS\asset\text\all.h"
 
 #include"rounded_rectangle.h"
-
-#include"BBS\asset\SFML_Text\tools.h"
 
 #include<iostream>	// only for debugging
 
@@ -31,10 +33,6 @@
 #include"board.h"
 
 #include"score_board.h"
-
-#include"screen_fade.h"
-
-#include"banner.h"
 
 #include"game_states/state_data.h"
 
