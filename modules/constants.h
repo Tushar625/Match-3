@@ -70,9 +70,9 @@ const std::array<sf::Color, 18> BRICK_COLOR{
 
 const std::array<sf::Color, 18> BRICK_COLOR_FLASHY{
     sf::Color(255, 185, 120),  // brighter orange
-    sf::Color(245, 110, 120),  // vibrant pink-red
+    sf::Color(255, 130, 150),  // vibrant pink-red
     sf::Color(170, 135, 60),   // golden olive
-    sf::Color(240, 100, 110),  // hot pink-red
+    sf::Color(255, 120, 140),  // hot pink-red
     sf::Color(70, 125, 60),    // earthy yellow-green
     sf::Color(255, 100, 100),    // strong red
     sf::Color(95, 170, 55),    // vivid green
