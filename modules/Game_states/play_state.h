@@ -1,5 +1,7 @@
 #pragma once
 
+extern class game_over_state game_over;
+
 class play_state : public bb::BASE_STATE
 {
 	game_data_type g_data;
@@ -55,7 +57,7 @@ class play_state : public bb::BASE_STATE
 		used to create fade in/out effect
 	*/
 
-	ScreenFade screen;	// creates the fade in and fade out effect
+	bb::ScreenFade screen;	// creates the fade in and fade out effect
 
 
 
@@ -63,7 +65,13 @@ class play_state : public bb::BASE_STATE
 		to show the level banner, like "Level 1"
 	*/
 
-	Banner banner;
+	bb::Banner banner;
+
+
+
+	// explosion effect
+
+	bb::Firecracker explo;
 
 
 
@@ -231,6 +239,8 @@ private:
 
 	void Update(double dt) override
 	{
+		explo.update(dt);
+
 		if (banner.xfinalUpdate(dt))
 		{
 			// returns true once after the banner display operation is finished
@@ -304,11 +314,11 @@ private:
 						the screen goes black slowly
 					*/
 
-					screen.setColor(sf::Color::Black);
+					//screen.setColor(sf::Color::Black);
 
-					//screen.setColor(sf::Color(217, 87, 99, 255));
+					screen.setColor(sf::Color(138, 3, 3));
 
-					screen.startFadeOut([this]() { init(true); /* reset the game data*/ sm.change_to(initial); });
+					screen.startFadeOut([this]() { sm.change_to(game_over, g_data.score); init(true); /* reset the game data*/});
 				}
 			);
 
@@ -326,6 +336,12 @@ private:
 		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
 			// pause the game
+
+			// stop the game timer and pointer color blinking
+
+			timer.stop();
+
+			pointer_color_timer.stop();
 
 			// fade out effect the screen goes black slowly
 
@@ -496,6 +512,15 @@ private:
 			for(const auto& match : matches)
 			{
 				g_data.score += match.size() * 50;	// 10 points for each brick in the match
+
+				// adding explosion
+
+				for(const auto& brick : match)
+				{
+					auto pos = offset + brick.pos + sf::Vector2f(BRICK_WIDTH, BRICK_HEIGHT) / 2.0f;
+
+					explo.create(pos, sf::Color::White/*BRICK_COLOR[brick_data.color]*/, 5000, 105);
+				}
 			}
 
 			// removing matched bricks
@@ -560,6 +585,10 @@ private:
 		{
 			bb::WINDOW.draw(selecter);
 		}
+
+		// the explosion
+
+		bb::WINDOW.draw(explo);
 
 		// rendering the screen fade effects
 

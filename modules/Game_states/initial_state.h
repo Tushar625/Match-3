@@ -22,7 +22,7 @@ class initial_state : public bb::BASE_STATE
 	ColorText header;
 
 
-	ScreenFade screen;	// creates the fade in and fade out effect
+	bb::ScreenFade screen;	// creates the fade in and fade out effect
 
 
 	

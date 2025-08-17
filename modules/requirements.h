@@ -2,13 +2,15 @@
 
 #include"BBS\game.h"	// mention path to game.h
 
-#include"BBS\asset\effect\banner.h"
+#include"BBS\asset\SFML\effect\banner.h"
 
-#include"BBS\asset\effect\screen_fade.h"
+#include"BBS\asset\SFML\effect\screen_fade.h"
 
-#include"BBS\asset\button\all.h"
+#include"BBS\asset\BBS\button\all.h"
 
-#include"BBS\asset\text\all.h"
+#include"BBS\asset\SFML\text\all.h"
+
+#include"BBS\asset\SFML\particle_system\firecracker.h"
 
 #include"rounded_rectangle.h"
 
@@ -39,3 +41,5 @@
 #include"game_states/initial_state.h"
 
 #include"game_states/play_state.h"
+
+#include"Game_states/game_over_state.h"

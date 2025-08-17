@@ -75,7 +75,7 @@ public:
 	{
 		text.setString(str);
 
-		bb::setCenterOrigin(text);
+		bb::textCenterOrigin(text);
 
 		text.setPosition(pos);
 	}
