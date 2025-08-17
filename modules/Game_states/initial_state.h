@@ -112,13 +112,15 @@ public:
 
 		header.updateRS(dt);
 
+		// update teh menu but don't use the input if the input is locked
+
+		auto sel = bb::menu_update(menu);
+
 		// don't take input when tween operations are running
 
 		if (screen.isActive())
 			return;
 
-
-		auto sel = bb::menu_update(menu);
 
 		/*if (bb::INPUT.isPressed(sf::Keyboard::Scan::Up) || bb::INPUT.isPressed(sf::Keyboard::Scan::Down))
 		{

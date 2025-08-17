@@ -87,6 +87,8 @@ class play_state : public bb::BASE_STATE
 	
 	bb::INTERVAL_TIMER pointer_color_timer;	// to change the pointer color periodically, to make it blink
 
+	bb::INTERVAL_TIMER explo_timer;
+
 
 
 	// delay timer
@@ -233,13 +235,25 @@ private:
 		screen.setColor(sf::Color::White);
 
 		screen.startFadeIn([this]() {level_banner(); });
+
+		// start the explosion timer
+
+		explo_timer.start(
+			1.0 / 120,
+			[this](double dt) -> bool
+			{
+				explo.update(dt);
+
+				return true;
+			}
+		);
 	}
 
 
 
 	void Update(double dt) override
 	{
-		explo.update(dt);
+		//explo.update(dt);
 
 		if (banner.xfinalUpdate(dt))
 		{
@@ -507,7 +521,9 @@ private:
 		{
 			// matches are found
 
-			// updating the score
+			// updating the score and adding explosions
+
+			explo_timer.lock();
 
 			for(const auto& match : matches)
 			{
@@ -519,9 +535,38 @@ private:
 				{
 					auto pos = offset + brick.pos + sf::Vector2f(BRICK_WIDTH, BRICK_HEIGHT) / 2.0f;
 
-					explo.create(pos, sf::Color::White/*BRICK_COLOR[brick_data.color]*/, 5000, 105);
+					// color of the explosion is determined by the brick color
+
+					auto color = BRICK_COLOR_FLASHY[brick.color];
+
+					auto threshold = 130;
+
+					if (color.r > threshold || color.g > threshold || color.b > threshold)
+					{
+						auto factor = 1.6;
+
+						color.r = std::min(255, int(color.r * factor));
+
+						color.g = std::min(255, int(color.g * factor));
+
+						color.b = std::min(255, int(color.b * factor));
+					}
+					else
+					{
+						auto factor = 2.25;
+
+						color.r = std::min(255, int(color.r * factor));
+
+						color.g = std::min(255, int(color.g * factor));
+
+						color.b = std::min(255, int(color.b * factor));
+					}
+
+					explo.create(pos, color, 4800, 115);
 				}
 			}
+
+			explo_timer.unlock();
 
 			// removing matched bricks
 
@@ -588,7 +633,11 @@ private:
 
 		// the explosion
 
+		explo_timer.lock();
+
 		bb::WINDOW.draw(explo);
+
+		explo_timer.unlock();
 
 		// rendering the screen fade effects
 
@@ -606,5 +655,7 @@ private:
 		timer.stop();
 
 		pointer_color_timer.stop();
+
+		explo_timer.stop();
 	}
 } play;
