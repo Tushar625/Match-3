@@ -1,20 +1,13 @@
 #pragma once
 
 
-class game_over_state : public bb::BASE_STATE
+class highest_score_state : public bb::BASE_STATE
 {
 	/*
 		used to create fade in/out effect
 	*/
 
 	bb::ScreenFade screen;	// creates the fade in and fade out effect
-
-
-	// banner animation for new record
-
-	bb::Banner banner;
-
-	bool new_record;
 
 
 	// score board
@@ -36,7 +29,7 @@ public:
 
 
 
-	game_over_state() :
+	highest_score_state() :
 		enter(
 			medium_text,
 			"Enter",
@@ -44,13 +37,6 @@ public:
 			sf::Color::Cyan,
 			sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 + ((10 + (MEDIUM_FONT_SIZE + 10) * 4) * 1.5) / 2 - 16),
 			bb::BOTTOM_CENTER
-		),
-		banner(
-			large_text,
-			sf::Vector2f(VIRTUAL_WIDTH, BRICK_HEIGHT * 1.5),
-			VIRTUAL_HEIGHT,
-			sf::Color(255, 255, 255),
-			sf::Color(95, 205, 228, 200)
 		)
 	{
 		// rounded rectangle
@@ -73,6 +59,12 @@ public:
 
 		text.setFillColor(sf::Color(99, 155, 255));
 
+		text.setString("Your Highest Score");
+
+		bb::textCenterOrigin(text);
+
+		text.setPosition(sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - MEDIUM_FONT_SIZE / 2 - 5));
+
 		// the score text
 
 		score_text = medium_text;
@@ -82,27 +74,8 @@ public:
 
 
 
-	void init(int score, bool new_record)
+	void init(int score)
 	{
-		this->new_record = new_record;
-
-		// setting info text
-
-		if (new_record)
-		{
-			text.setString("Congrats, New Record");
-		}
-		else
-		{
-			text.setString("Here's Your Score");
-		}
-
-		bb::textCenterOrigin(text);
-
-		text.setPosition(sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - MEDIUM_FONT_SIZE / 2 - 5));
-
-		// setting score text
-		
 		score_text.setString(std::to_string(score));
 
 		bb::textCenterOrigin(score_text);
@@ -114,17 +87,15 @@ public:
 
 	void Enter()	// initialze this state
 	{
-		screen.setColor(sf::Color(138, 3, 3));
+		screen.setColor(sf::Color::White);
 
-		screen.startFadeIn([this]() { if(new_record) banner.startAnimation("New Record"); });
+		screen.startFadeIn();
 	}
 
 
 
 	void Update(double dt)	// update this state
 	{
-		banner.xfinalUpdate(dt);
-
 		auto mpos = bb::INPUT.pointer();
 
 		auto mouse_clicked = enter.is_clicked(
@@ -139,7 +110,7 @@ public:
 			return;
 		}
 
-		if (screen.isActive() || banner.isActive())
+		if (screen.isActive())
 		{
 			return;
 		}
@@ -164,8 +135,6 @@ public:
 
 		enter.Render();
 
-		banner.render();
-
 		screen.render();
 	}
 
@@ -175,4 +144,4 @@ public:
 	{
 
 	}
-} game_over;
+} highest_score;

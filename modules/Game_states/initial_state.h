@@ -2,8 +2,13 @@
 
 extern class play_state play;
 
+extern class highest_score_state highest_score;
+
 class initial_state : public bb::BASE_STATE
 {
+	highest_score_type h_data;
+
+
 	sf::Vector2f offset;
 
 	board_class board;
@@ -144,7 +149,7 @@ public:
 
 			screen.setColor(sf::Color::White);
 
-			screen.startFadeOut([](){ sm.change_to(play); });
+			screen.startFadeOut([this](){ sm.change_to(play, &h_data); });
 		}
 
 		if (sel == 1)
@@ -153,7 +158,16 @@ public:
 
 			screen.setColor(sf::Color::White);
 
-			screen.startFadeOut([]() { sm.change_to(play, true); });	// true, forces play state to reset its data
+			screen.startFadeOut([this]() { sm.change_to(play, &h_data, true); });	// true, forces play state to reset its data
+		}
+
+		if (sel == 2)
+		{
+			// fade out effect the screen goes white
+
+			screen.setColor(sf::Color::White);
+
+			screen.startFadeOut([this]() { sm.change_to(highest_score, h_data.highest_score); });	// true, forces play state to reset its data
 		}
 
 		if (sel == 3 || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))

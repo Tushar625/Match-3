@@ -43,3 +43,5 @@
 #include"game_states/play_state.h"
 
 #include"Game_states/game_over_state.h"
+
+#include"Game_states/highest_score_state.h"

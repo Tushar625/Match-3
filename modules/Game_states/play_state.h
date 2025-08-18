@@ -4,6 +4,8 @@ extern class game_over_state game_over;
 
 class play_state : public bb::BASE_STATE
 {
+	highest_score_type *ph_data;
+
 	game_data_type g_data;
 
 
@@ -69,6 +71,12 @@ class play_state : public bb::BASE_STATE
 
 
 
+	// the pause button
+
+	bb::STR_BUTTON pause;
+
+
+
 	// explosion effect
 
 	bb::Firecracker explo;
@@ -115,6 +123,14 @@ public:
 			VIRTUAL_HEIGHT,
 			sf::Color(255, 255, 255),
 			sf::Color(95, 205, 228, 200)
+		),
+		pause(
+			medium_text,
+			"Pause (Esc)",
+			sf::Color(48, 96, 130),
+			sf::Color(99, 155, 255),
+			sf::Vector2f(24, VIRTUAL_HEIGHT - 24),
+			bb::BOTTOM_LEFT
 		)
 	{
 		// preparing the pointer, an empty rounded rectangle
@@ -166,32 +182,43 @@ public:
 
 
 
-	void init(bool new_game)
+	void init(highest_score_type* ph_data, bool new_game = false)
 	{
+		this->ph_data = ph_data;
+
 		// starting a new game
 
-		g_data.score = 0;
-		
-		g_data.level = 1;
-		
-		g_data.time = 60;
-		
-		g_data.goal = 1000;
-
-		// new brickmap
-
-		board.generate_brickmap();
-
-		point = 0;
-
-		set_pointer_pos(board[point].pos);
-		
-		selected = -1;
+		if (new_game)
+		{
+			reset();
+		}
 	}
 
 
 
 private:
+
+
+	void reset()
+	{
+		// reset game data
+
+		g_data.reset();
+
+		// new brickmap
+
+		board.generate_brickmap();
+
+		// place the pointer on the top left brick
+
+		point = 0;
+
+		set_pointer_pos(board[point].pos);
+
+		// no brick is selected
+
+		selected = -1;
+	}
 
 
 	void level_banner()
@@ -253,7 +280,16 @@ private:
 
 	void Update(double dt) override
 	{
-		//explo.update(dt);
+		// updating the button
+
+		auto mpos = bb::INPUT.pointer();
+
+		auto pause_button_clicked = pause.is_clicked(
+			mpos.x,
+			mpos.y,
+			bb::INPUT.isPressedM(sf::Mouse::Button::Left),
+			bb::INPUT.isReleasedM(sf::Mouse::Button::Left)
+		);
 
 		if (banner.xfinalUpdate(dt))
 		{
@@ -332,7 +368,13 @@ private:
 
 					screen.setColor(sf::Color(138, 3, 3));
 
-					screen.startFadeOut([this]() { sm.change_to(game_over, g_data.score); init(true); /* reset the game data*/});
+					screen.startFadeOut([this]()
+						{
+							sm.change_to(game_over, g_data.score, ph_data->update(g_data.score));	/*update highest score*/
+							
+							reset();	// reset the game
+						}
+					);
 				}
 			);
 
@@ -347,7 +389,7 @@ private:
 
 
 
-		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
+		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Escape) || pause_button_clicked)
 		{
 			// pause the game
 
@@ -491,7 +533,7 @@ private:
 
 	bool mouse_on_brickmap(int x, int y)
 	{
-		return bb::in_rng(offset.x, (float)x, offset.x + GRID_WIDTH * BRICK_WIDTH - 1) && bb::in_rng(offset.y, (float)y, offset.y + GRID_HEIGHT * BRICK_HEIGHT - 1);
+		return bb::in_rng_open(offset.x, (float)x, offset.x + GRID_WIDTH * BRICK_WIDTH) && bb::in_rng_open(offset.y, (float)y, offset.y + GRID_HEIGHT * BRICK_HEIGHT);
 	}
 
 
@@ -638,6 +680,12 @@ private:
 		bb::WINDOW.draw(explo);
 
 		explo_timer.unlock();
+
+		// the pause button
+
+		textShadow(pause.get_text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+
+		pause.Render();
 
 		// rendering the screen fade effects
 
