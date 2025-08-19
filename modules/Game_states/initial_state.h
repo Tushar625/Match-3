@@ -127,14 +127,12 @@ public:
 			return;
 
 
-		/*if (bb::INPUT.isPressed(sf::Keyboard::Scan::Up) || bb::INPUT.isPressed(sf::Keyboard::Scan::Down))
+		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Up) || bb::INPUT.isPressed(sf::Keyboard::Scan::Down))
 		{
-			sound.setBuffer(sound_buffer[SELECT]);
-
-			sound.play();
+			play_sound(POINTER);
 		}
 
-		if ((bb::INPUT.isReleasedM(sf::Mouse::Left) || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter)) && sel != -1)
+		/*if ((bb::INPUT.isReleasedM(sf::Mouse::Left) || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter)) && sel != -1)
 		{
 			sound.setBuffer(sound_buffer[CONFIRM]);
 
@@ -224,5 +222,6 @@ public:
 
 	void Exit() override
 	{
+		screen.stop();
 	}
 } initial;

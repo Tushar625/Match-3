@@ -370,9 +370,11 @@ private:
 
 					screen.startFadeOut([this]()
 						{
-							sm.change_to(game_over, g_data.score, ph_data->update(g_data.score));	/*update highest score*/
-							
+							auto score = g_data.score;
+
 							reset();	// reset the game
+
+							sm.change_to(game_over, score, ph_data->update(score));	/*update highest score*/
 						}
 					);
 				}
@@ -411,6 +413,8 @@ private:
 
 		// pointer up if pointer is not on the first row
 
+		auto temp_point = point;	// to check if point changes
+
 		if (point >= GRID_WIDTH && bb::INPUT.isPressed(sf::Keyboard::Scan::Up))
 		{
 			point -= GRID_WIDTH;
@@ -443,6 +447,13 @@ private:
 			point += 1;
 
 			set_pointer_pos(board[point].pos);
+		}
+
+		// sound of pointer movement
+
+		if (temp_point != point)
+		{
+			play_sound(POINTER);
 		}
 
 		// checking which brick is pointed by the mouse pointer
@@ -650,6 +661,14 @@ private:
 		tween.unlock();
 
 
+		// if a brick is selected, draw the selecter on it
+
+		if (selected > -1)
+		{
+			bb::WINDOW.draw(selecter);
+		}
+
+
 		// always draw the pointer on the selected brick
 
 		pointer_color_timer.lock();
@@ -665,13 +684,6 @@ private:
 
 		bb::WINDOW.draw(pointer);
 
-
-		// if a brick is selected, draw the selecter on it
-
-		if (selected > -1)
-		{
-			bb::WINDOW.draw(selecter);
-		}
 
 		// the explosion
 
@@ -700,10 +712,16 @@ private:
 
 	void Exit() override
 	{
+		tween.stop();
+
 		timer.stop();
 
 		pointer_color_timer.stop();
 
 		explo_timer.stop();
+
+		screen.stop();
+
+		banner.stop();
 	}
 } play;

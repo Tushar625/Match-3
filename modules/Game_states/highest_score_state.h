@@ -117,6 +117,8 @@ public:
 
 		if (mouse_clicked || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
+			play_sound(BUTTON);
+
 			screen.setColor(sf::Color::Black);
 
 			screen.startFadeOut([this]() { sm.change_to(initial); });
@@ -142,6 +144,6 @@ public:
 
 	void Exit()		// destroy this state
 	{
-
+		screen.stop();
 	}
 } highest_score;

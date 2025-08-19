@@ -12,6 +12,10 @@ std::vector<sf::Sprite> brick_sprite;
 
 sf::Sprite bg_sprite;
 
+std::vector<sf::SoundBuffer> sound_buffer{ SOUND_COUNT };
+
+sf::Music bg_music;
+
 bb::STATE_MACHINE sm;
 
 
@@ -73,5 +77,55 @@ public:
 		// the part of the background texture we want to use
 
 		bg_sprite.setTextureRect(sf::IntRect(20, 46, texture[BACKGROUND].getSize().x - 20, texture[BACKGROUND].getSize().y - 46));
+
+
+
+		// loading the sounds
+
+		if (!sound_buffer[POINTER].loadFromFile("sound/pointer.wav"))
+		{
+			std::cout << "can't load pointer.wav\n";
+		}
+
+		if (!sound_buffer[BUTTON].loadFromFile("sound/button.mp3"))
+		{
+			std::cout << "can't load button.mp3\n";
+		}
+
+		if (!sound_buffer[GAME_START].loadFromFile("sound/game-start.mp3"))
+		{
+			std::cout << "can't load game-start.mp3\n";
+		}
+
+		if (!sound_buffer[BRICK_SWAP].loadFromFile("sound/brick_swap.mp3"))
+		{
+			std::cout << "can't load brick_swap.mp3\n";
+		}
+
+		if (!sound_buffer[BRICK_BREAK].loadFromFile("sound/brick_breaking.mp3"))
+		{
+			std::cout << "can't load brick_breaking.mp3\n";
+		}
+
+		if (!sound_buffer[LEVEL_UP].loadFromFile("sound/level_up.mp3"))
+		{
+			std::cout << "can't load level_up.mp3\n";
+		}
+
+		if (!sound_buffer[GAME_OVER].loadFromFile("sound/game_over.mp3"))
+		{
+			std::cout << "can't load game_over.mp3\n";
+		}
+
+		if (!sound_buffer[NEW_RECORD].loadFromFile("sound/new_record.mp3"))
+		{
+			std::cout << "can't load new_record.mp3\n";
+		}
+
+
+		if (!bg_music.openFromFile("sound/bg_sound.mp3"))
+		{
+			std::cout << "can't load bg_sound.mp3\n";
+		}
 	}
 } obj;

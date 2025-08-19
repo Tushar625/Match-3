@@ -14,6 +14,8 @@
 
 #include"rounded_rectangle.h"
 
+#include<SFML/Audio.hpp>
+
 #include<iostream>	// only for debugging
 
 #include<string>

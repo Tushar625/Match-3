@@ -60,9 +60,12 @@ inline bool bb::Game::Create()
 
 
 
-	// creating the brickmap
+	// starting the background music
 
-	//board.generate_brickmap(sf::Vector2f(128, 16));
+	bg_music.setLoop(true);
+
+	bg_music.play();
+
 
 
 	return SUCCESS;
@@ -86,7 +89,11 @@ inline bool bb::Game::Update(double dt)
 	// if null state is detected exit
 
 	if (sm.null_state())
+	{
+		bg_music.stop();	// stopping the background music
+
 		return STOP_GAME_LOOP;
+	}
 
 	return !STOP_GAME_LOOP;
 }

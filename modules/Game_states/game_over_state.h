@@ -173,6 +173,8 @@ public:
 
 	void Exit()		// destroy this state
 	{
+		screen.stop();
 
+		banner.stop();
 	}
 } game_over;
