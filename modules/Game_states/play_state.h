@@ -344,6 +344,12 @@ private:
 			// display the level banner and start the game timer countdown and pointer color blinking
 
 			level_banner();
+
+			// level up sound
+
+			play_sound(LEVEL_UP);
+
+			return;
 		}
 
 
@@ -375,10 +381,20 @@ private:
 							reset();	// reset the game
 
 							sm.change_to(game_over, score, ph_data->update(score));	/*update highest score*/
+
+							// game over music has finished so start background music
+
+							bg_music.play();
 						}
 					);
 				}
 			);
+
+			// game over sound
+
+			play_sound(GAME_OVER);
+
+			bg_music.pause();	// pause the background music while game over music play
 
 			return;
 		}
@@ -394,6 +410,8 @@ private:
 		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Escape) || pause_button_clicked)
 		{
 			// pause the game
+
+			play_sound(BUTTON);
 
 			// stop the game timer and pointer color blinking
 
@@ -514,7 +532,7 @@ private:
 
 				auto& pos_s = board[selected].pos;
 
-				tween.start(.2,
+				tween.start(.12,
 					bb::twn_list(
 						bb::twn(pos_p.x, pos_s.x),
 						bb::twn(pos_p.y, pos_s.y),
@@ -528,6 +546,10 @@ private:
 				);
 
 				selected = -1;	// deselect the selected brick
+
+				// play swapping sound
+
+				play_sound(BRICK_SWAP);
 			}
 		}
 	}
@@ -636,6 +658,10 @@ private:
 					calculate_match();
 				}
 			);
+
+			// brick breaking sound
+
+			play_sound(BRICK_BREAK);
 		}
 	}
 
@@ -695,7 +721,7 @@ private:
 
 		// the pause button
 
-		textShadow(pause.get_text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+		bb::textShadow(pause.get_text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
 
 		pause.Render();
 

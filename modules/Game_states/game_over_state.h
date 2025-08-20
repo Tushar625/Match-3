@@ -116,7 +116,22 @@ public:
 	{
 		screen.setColor(sf::Color(138, 3, 3));
 
-		screen.startFadeIn([this]() { if(new_record) banner.startAnimation("New Record"); });
+		screen.startFadeIn([this]()
+			{ 
+				if (new_record)
+				{
+					banner.setFallDuration(1);
+
+					banner.setPauseDuration(2);
+
+					banner.startAnimation("New Record");
+
+					// play new record sound
+
+					play_sound(NEW_RECORD);
+				}
+			}
+		);
 	}
 
 
@@ -127,7 +142,7 @@ public:
 
 		auto mpos = bb::INPUT.pointer();
 
-		auto mouse_clicked = enter.is_clicked(
+		auto enter_button_clicked = enter.is_clicked(
 			mpos.x,
 			mpos.y,
 			bb::INPUT.isPressedM(sf::Mouse::Button::Left),
@@ -144,8 +159,10 @@ public:
 			return;
 		}
 
-		if (mouse_clicked || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
+		if (enter_button_clicked || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
+			play_sound(BUTTON);
+
 			screen.setColor(sf::Color::Black);
 
 			screen.startFadeOut([this]() { sm.change_to(initial); });
@@ -165,6 +182,12 @@ public:
 		enter.Render();
 
 		banner.render();
+
+		// adding shadow to banner text
+
+		bb::textShadow(banner.text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+
+		bb::WINDOW.draw(banner.text());
 
 		screen.render();
 	}

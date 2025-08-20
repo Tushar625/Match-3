@@ -98,7 +98,7 @@ public:
 	{
 		auto mpos = bb::INPUT.pointer();
 
-		auto mouse_clicked = enter.is_clicked(
+		auto enter_button_clicked = enter.is_clicked(
 			mpos.x,
 			mpos.y,
 			bb::INPUT.isPressedM(sf::Mouse::Button::Left),
@@ -115,7 +115,7 @@ public:
 			return;
 		}
 
-		if (mouse_clicked || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
+		if (enter_button_clicked || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
 			play_sound(BUTTON);
 

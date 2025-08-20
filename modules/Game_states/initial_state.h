@@ -24,7 +24,7 @@ class initial_state : public bb::BASE_STATE
 
 	RoundedRectangle bg_header;
 
-	ColorText header;
+	bb::ColorText header;
 
 
 	bb::ScreenFade screen;	// creates the fade in and fade out effect
@@ -132,12 +132,10 @@ public:
 			play_sound(POINTER);
 		}
 
-		/*if ((bb::INPUT.isReleasedM(sf::Mouse::Left) || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter)) && sel != -1)
+		if ((bb::INPUT.isReleasedM(sf::Mouse::Left) || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter)) && sel != -1)
 		{
-			sound.setBuffer(sound_buffer[CONFIRM]);
-
-			sound.play();
-		}*/
+			play_sound(GAME_START);
+		}
 
 		// play = 0, high_score = 1, quit = 2
 
@@ -176,6 +174,19 @@ public:
 
 			screen.startFadeOut([]() { sm.change_to(bb::NULL_STATE); });
 		}
+
+		/*if (sel > -1)
+		{
+			// game start sound
+
+			play_sound(GAME_START);
+		}
+		else
+		{
+			// button sound
+
+			play_sound(BUTTON);
+		}*/
 	}
 
 	void Render() override
@@ -192,7 +203,7 @@ public:
 
 		for (int i = 0; i < header.getTextCount(); i++)
 		{
-			textShadow(header.getText(i), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+			bb::textShadow(header.getText(i), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
 		}
 
 		// header
@@ -207,7 +218,7 @@ public:
 
 		for (int i = 0; i < menu.get_bcount(); i++)
 		{
-			textShadow(menu[i].get_text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+			bb::textShadow(menu[i].get_text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
 		}
 
 		// menu
