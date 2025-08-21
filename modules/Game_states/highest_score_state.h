@@ -12,7 +12,7 @@ class highest_score_state : public bb::BASE_STATE
 
 	// score board
 
-	RoundedRectangle board;
+	bb::RoundedRectangleShape board;
 
 
 	// texts

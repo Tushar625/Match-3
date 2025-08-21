@@ -37,7 +37,7 @@ class play_state : public bb::BASE_STATE
 
 	int point;	// index of the brick pointed by pointer
 
-	RoundedRectangle pointer;	// to draw the pointer on the screen
+	bb::RoundedRectangleShape pointer;	// to draw the pointer on the screen
 
 	bool pointer_color;	// decide the pointer color
 
@@ -51,7 +51,7 @@ class play_state : public bb::BASE_STATE
 
 	int selected;	// index of the selected brick, -1 if no brick is selected
 
-	RoundedRectangle selecter;	// to draw the selecter on the screen, when a brick is selected
+	bb::RoundedRectangleShape selecter;	// to draw the selecter on the screen, when a brick is selected
 
 
 
@@ -381,10 +381,6 @@ private:
 							reset();	// reset the game
 
 							sm.change_to(game_over, score, ph_data->update(score));	/*update highest score*/
-
-							// game over music has finished so start background music
-
-							bg_music.play();
 						}
 					);
 				}

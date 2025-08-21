@@ -6,19 +6,17 @@ class score_board_class
 
 	sf::Vector2f level_pos, score_pos, goal_pos, timer_pos;
 
-	RoundedRectangle board;
+	bb::RoundedRectangleShape board;
 
 
 public:
 
 
-	score_board_class(sf::Vector2f pos)
+	score_board_class(sf::Vector2f pos) : board(sf::Vector2f(150, 10 + (MEDIUM_FONT_SIZE + 10) * 4))
 	{
 		// rounded rectangle
 
 		board.setPosition(pos);
-
-		board.setSize(sf::Vector2f(150, 10 + (MEDIUM_FONT_SIZE + 10) * 4));
 
 		board.setRadius(6);
 

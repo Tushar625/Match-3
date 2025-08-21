@@ -19,7 +19,7 @@ class game_over_state : public bb::BASE_STATE
 
 	// score board
 
-	RoundedRectangle board;
+	bb::RoundedRectangleShape board;
 
 
 	// texts
@@ -124,12 +124,25 @@ public:
 
 					banner.setPauseDuration(2);
 
-					banner.startAnimation("New Record");
+					banner.startAnimation("New Record",
+						[this]()
+						{
+							// game over and new record music has finished so start background music
+
+							bg_music.play();
+						}
+					);
 
 					// play new record sound
 
 					play_sound(NEW_RECORD);
+
+					return;
 				}
+
+				// game over music has finished so start background music
+
+				bg_music.play();
 			}
 		);
 	}

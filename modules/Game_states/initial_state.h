@@ -17,12 +17,12 @@ class initial_state : public bb::BASE_STATE
 	sf::RectangleShape bg_dimmer;
 
 
-	RoundedRectangle bg_menu;
+	bb::RoundedRectangleShape bg_menu;
 
 	bb::MENU<bb::STR_BUTTON> menu;
 
 
-	RoundedRectangle bg_header;
+	bb::RoundedRectangleShape bg_header;
 
 	bb::ColorText header;
 
@@ -174,19 +174,6 @@ public:
 
 			screen.startFadeOut([]() { sm.change_to(bb::NULL_STATE); });
 		}
-
-		/*if (sel > -1)
-		{
-			// game start sound
-
-			play_sound(GAME_START);
-		}
-		else
-		{
-			// button sound
-
-			play_sound(BUTTON);
-		}*/
 	}
 
 	void Render() override

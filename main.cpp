@@ -19,7 +19,7 @@ unsigned int bb::set_antialiashing()
 
 
 
-background bg;
+BGLoopH bg(bg_sprite, 52, 20, VIRTUAL_HEIGHT);
 
 
 

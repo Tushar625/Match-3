@@ -68,7 +68,7 @@ public:
 
 		// creating the sprites
 
-		brick_sprite = generateSpriteVector(texture[MAIN], BRICK_WIDTH, BRICK_HEIGHT);
+		brick_sprite = bb::generateSpriteVector(texture[MAIN], BRICK_WIDTH, BRICK_HEIGHT);
 
 		texture[BACKGROUND].setSmooth(false);
 

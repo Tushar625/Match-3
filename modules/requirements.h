@@ -2,19 +2,17 @@
 
 #include"BBS\game.h"	// mention path to game.h
 
-#include"BBS\asset\SFML\effect\banner.h"
+#include"BBS\asset\effect\banner.h"
 
-#include"BBS\asset\SFML\effect\screen_fade.h"
+#include"BBS\asset\effect\screen_fade.h"
 
-#include"BBS\asset\BBS\button\all.h"
+#include"BBS\asset\button\all.h"
 
-#include"BBS\asset\SFML\text\all.h"
+#include"BBS\asset\text\all.h"
 
-#include"BBS\asset\SFML\particle_system\firecracker.h"
+#include"BBS\asset\particle_system\firecracker.h"
 
-#include"rounded_rectangle.h"
-
-#include<SFML/Audio.hpp>
+#include<SFML\Audio.hpp>
 
 #include<iostream>	// only for debugging
 
