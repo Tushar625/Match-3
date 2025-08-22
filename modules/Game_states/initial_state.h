@@ -137,6 +137,11 @@ public:
 			play_sound(GAME_START);
 		}
 
+		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
+		{
+			play_sound(GAME_START);
+		}
+
 		// play = 0, high_score = 1, quit = 2
 
 		if (sel == 0)

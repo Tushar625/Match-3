@@ -19,7 +19,7 @@ unsigned int bb::set_antialiashing()
 
 
 
-BGLoopH bg(bg_sprite, 52, 20, VIRTUAL_HEIGHT);
+bb::InfScrollingBG bg(bg_sprite, 52, 20, VIRTUAL_HEIGHT);
 
 
 

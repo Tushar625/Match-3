@@ -12,6 +12,8 @@
 
 #include"BBS\asset\particle_system\firecracker.h"
 
+#include"BBS\asset\bg\inf_scrolling_bg.h"
+
 #include<SFML\Audio.hpp>
 
 #include<iostream>	// only for debugging
@@ -27,8 +29,6 @@
 #include"util.h"
 
 #include"assets.h"
-
-#include"background.h"
 
 #include"brick.h"
 
