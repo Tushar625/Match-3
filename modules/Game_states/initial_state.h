@@ -1,26 +1,34 @@
 #pragma once
 
+
+
 extern class play_state play;
 
 extern class highest_score_state highest_score;
 
+
+
 class initial_state : public bb::BASE_STATE
 {
-	highest_score_type h_data;
+	highest_score_type h_data;	// to store the highest score data
 
 
-	sf::Vector2f offset;
+	sf::Vector2f offset;	// offset for the brick map
 
-	board_class board;
+	board_class board;		// the brickmap displayed as decoration
 
 
-	sf::RectangleShape bg_dimmer;
+	sf::RectangleShape bg_dimmer;	// to dim the background
 
+
+	// the game menu
 
 	bb::RoundedRectangleShape bg_menu;
 
 	bb::MENU<bb::STR_BUTTON> menu;
 
+
+	// the header
 
 	bb::RoundedRectangleShape bg_header;
 
@@ -34,17 +42,17 @@ class initial_state : public bb::BASE_STATE
 public:
 
 	initial_state() :
-		offset(128, 16),
+		offset(128, 16),	// place the brick map at the center of the screen
 		bg_dimmer(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
 		screen(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
 		menu(
 			bb::STR_BUTTON::make_menu(
 				medium_text,
-				{ "Continue", "Start", "Highest Score", "Quite" },
-				sf::Color(48, 96, 130),
-				sf::Color(99, 155, 255),
-				10,
-				sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 + 10),
+				{ "Continue", "Start", "Highest Score", "Quite" },	// 4 options
+				sf::Color(48, 96, 130),		// ordinary color
+				sf::Color(99, 155, 255),	// hover color
+				10,							// gap between options
+				sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 + 10),	// coords of top center of the menu
 				bb::TOP_CENTER
 			)
 		)
@@ -80,10 +88,12 @@ public:
 		header.set(
 			large_text,
 			"MATCH 3",
-			3.5,
-			sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - BRICK_HEIGHT * 2),
+			3.5,	// gap between letters
+			sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 - BRICK_HEIGHT * 2),	// center coord of the header
 			bb::CENTER
 		);
+
+		// setting colors to cycle through
 
 		header.setColor(
 			{
@@ -115,9 +125,11 @@ public:
 			return;
 		}
 
+		// always update the colorful texts of header
+
 		header.updateRS(dt);
 
-		// update teh menu but don't use the input if the input is locked
+		// update the menu but don't use the input if the input is locked
 
 		auto sel = bb::menu_update(menu);
 
@@ -126,6 +138,7 @@ public:
 		if (screen.isActive())
 			return;
 
+		// playing the UI sounds
 
 		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Up) || bb::INPUT.isPressed(sf::Keyboard::Scan::Down))
 		{
@@ -142,7 +155,7 @@ public:
 			play_sound(GAME_START);
 		}
 
-		// play = 0, high_score = 1, quit = 2
+		// continue
 
 		if (sel == 0)
 		{
@@ -153,6 +166,8 @@ public:
 			screen.startFadeOut([this](){ sm.change_to(play, &h_data); });
 		}
 
+		// start (new game)
+
 		if (sel == 1)
 		{
 			// fade out effect the screen goes white
@@ -162,6 +177,8 @@ public:
 			screen.startFadeOut([this]() { sm.change_to(play, &h_data, true); });	// true, forces play state to reset its data
 		}
 
+		// high_score
+
 		if (sel == 2)
 		{
 			// fade out effect the screen goes white
@@ -170,6 +187,8 @@ public:
 
 			screen.startFadeOut([this]() { sm.change_to(highest_score, h_data.highest_score); });	// true, forces play state to reset its data
 		}
+
+		// quite
 
 		if (sel == 3 || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
@@ -195,7 +214,7 @@ public:
 
 		for (int i = 0; i < header.getTextCount(); i++)
 		{
-			bb::textShadow(header.getText(i), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+			bb::shadow(header.getText(i), sf::Color(34, 32, 52), sf::Vector2f{1.5, 1.5}, sf::Vector2f{1.5, 1}, sf::Vector2f{0, 1.5});
 		}
 
 		// header
@@ -210,7 +229,7 @@ public:
 
 		for (int i = 0; i < menu.get_bcount(); i++)
 		{
-			bb::textShadow(menu[i].get_text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+			bb::shadow(menu[i].get_text(), sf::Color(34, 32, 52), sf::Vector2f{1.5, 1.5}, sf::Vector2f{1.5, 1}, sf::Vector2f{0, 1.5});
 		}
 
 		// menu
@@ -218,13 +237,15 @@ public:
 		menu.Render(bb::STR_BUTTON::color);
 
 
-		// rendering the curtain
+		// rendering the screen fade effects
 		
 		screen.render();
 	}
 
 	void Exit() override
 	{
-		screen.stop();
+		// stopping all the threads before we exit this state
+
+		screen.stop();	// stopping the thread inside the tweener of screen fade effect
 	}
 } initial;

@@ -1,12 +1,17 @@
 #pragma once
 
+/*
+	this class displays the score board during the gameplay
+
+*/
+
 class score_board_class
 {
-	sf::Text level_text, score_text, goal_text, timer_text;
+	sf::Text level_text, score_text, goal_text, timer_text;	// score board texts
 
-	sf::Vector2f level_pos, score_pos, goal_pos, timer_pos;
+	//sf::Vector2f level_pos, score_pos, goal_pos, timer_pos;
 
-	bb::RoundedRectangleShape board;
+	bb::RoundedRectangleShape board;	// the background of the score board
 
 
 public:
@@ -22,7 +27,7 @@ public:
 
 		board.setCornerPointCount(12);
 
-		board.setFillColor(sf::Color(63, 63, 116, 245));
+		board.setFillColor(sf::Color(63, 63, 116, 245));	// semi translucent color
 
 		pos.x += board.getLocalBounds().width / 2;
 
@@ -32,19 +37,13 @@ public:
 
 		level_text = medium_text;
 
-		score_text = medium_text;
-
-		goal_text = medium_text;
-
-		timer_text = medium_text;
-
 		level_text.setFillColor(sf::Color(99, 155, 255));
 
-		score_text.setFillColor(sf::Color(99, 155, 255));
+		score_text = level_text;
 
-		goal_text.setFillColor(sf::Color(99, 155, 255));
+		goal_text = level_text;
 
-		timer_text.setFillColor(sf::Color(99, 155, 255));
+		timer_text = level_text;
 
 		text_setup(level_text, "Level: 1", pos);
 
@@ -61,13 +60,20 @@ public:
 		text_setup(timer_text, "Time: 60", pos);
 	}
 
+	/*
+	
+	// to tween the position of the score board (uncompleted)
+
 	void set_pos(sf::Vector2f pos)
 	{
 		level_pos.x = score_pos.x = goal_pos.x = timer_pos.x = pos.x;
+	}*/
 
+private:
 
-	}
-
+	/*
+		prepare a text object by setting its string, centering its origin and setting its position
+	*/
 
 	void text_setup(sf::Text& text, const std::string& str, const sf::Vector2f& pos)
 	{
@@ -78,9 +84,19 @@ public:
 		text.setPosition(pos);
 	}
 
+public:
+
+	/*
+		render the score board
+	*/
 
 	void render(int level, int score, int goal, int time)
 	{
+		/*
+			static variables to keep track of previous values, so that we only update the
+			texts when the value changes
+		*/
+		
 		static int prev_level = 1, prev_score = 0, prev_goal = 0, prev_time = 60;
 
 		if(prev_level != level)

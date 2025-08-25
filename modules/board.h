@@ -39,6 +39,8 @@ public:
 	}
 
 
+	// overload [] operator to access the brick_structs in brick_map vector
+
 	brick_struct& operator[](int index)
 	{
 		return brick_map[index];
@@ -48,10 +50,10 @@ public:
 	/*
 		generate_brickmap() creates a grid of bricks with random colors and types.
 
-		It fills the bmap vector with brick_struct objects, each representing a
+		It fills the brick_map vector with brick_struct objects, each representing a
 		brick in the grid.
 
-		offset is used to place the grid at a certain position on the screen
+		top-left corner of the brick_map grid is at (0, 0)
 	*/
 
 	void generate_brickmap()
@@ -95,10 +97,23 @@ public:
 
 		if (find_matches().size())
 		{
+			// if there are any matches in the generated brickmap, we regenerate the brickmap
+			// this is to ensure that the game doesn't start with any matches
+
 			generate_brickmap();
 		}
 	}
 
+
+	/*
+		find_matches() checks the brick_map for any matches of 3 or more bricks of the same color
+		in a row or column.
+		
+		It returns a vector of vectors, where each inner vector contains the brick_structs that
+		form a match.
+		
+		If no matches are found, it returns an empty vector.
+	*/
 
 	std::vector<std::vector<brick_struct>> find_matches()
 	{
@@ -120,7 +135,7 @@ public:
 
 			// checking a row
 
-			for (int x = 1; x < GRID_WIDTH; x++)	// we already accounted for first brick, so starting from index 1
+			for (int x = 1; x < GRID_WIDTH; x++)  // we already accounted for first brick, so starting from index 1
 			{
 				auto& curr_brick = brick_map[y * GRID_WIDTH + x];
 
@@ -254,6 +269,8 @@ public:
 	}
 
 
+	// if the position of the brick at (x, y) is (-100, -100) then it is a space grid
+
 	bool is_space_grid(int x, int y) const noexcept
 	{
 		return brick_map[y * GRID_WIDTH + x].pos == sf::Vector2f(-100, -100);
@@ -275,6 +292,8 @@ public:
 	}
 
 
+	// remove the matched bricks from the brick_map by making them space grids
+
 	void remove_matches(const std::vector<std::vector<brick_struct>>& matches)
 	{
 		//std::cout << "matches size: " << matches.size();
@@ -289,6 +308,12 @@ public:
 	}
 
 
+	/*
+		fill the empty spaces in the brick_map but don't place the bricks directly
+		on the empty spaces, instead place them above the grid and return the tweening
+		data that can be used to animate the bricks falling into their places.
+	*/
+	
 	bb::MULTI_TWN<float> fill_matches()
 	{
 		bb::MULTI_TWN<float> twn_vector;
@@ -309,7 +334,7 @@ public:
 			int space_y = y;	// y of the first empty space
 
 
-			// now dropping bricks to fillup the space
+			// now dropping bricks on top to fillup the space
 
 			y--;	// starting from the grid on top of space grid
 
@@ -369,8 +394,9 @@ public:
 			// now we fillup the space from the bottom
 
 			/*
-				notice "y_start -= BRICK_HEIGHT", we are placing falling bricks on top of
-				eachother, to create a nice cascading effect when they falls
+				notice "y_start -= BRICK_HEIGHT", first brick is placed right on top of the grid.
+				subsequent bricks are placed on top of eachother, to create a nice cascading effect
+				when they falls
 			*/
 
 			for(; y >=0; y--, y_start -= BRICK_HEIGHT)
@@ -394,6 +420,24 @@ public:
 		return twn_vector;
 	}
 
+
+	/*
+		render the brick_map at an offset position
+
+		the brickmap is generated with its top left at (0, 0) position
+
+		offset is used to move the entire brick_map to a different position on the screen
+
+		why I used offset here instead of generating the brickmap at a different position?
+
+		this way it's easier to calculate the brick positions while filling the matches, and
+		keeps the code simple. This is the only method in this class that needs the offset.
+		No need to worry about it in other methods.
+
+		If you talk about performance, I am already setting the position of each brick before
+		rendering it (to facilitate tweening), so adding an offset to that position here is a
+		very small overhead.
+	*/
 
 	void render(const sf::Vector2f& offset)
 	{

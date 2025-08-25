@@ -1,6 +1,10 @@
 #pragma once
 
-#include"BBS\game.h"	// mention path to game.h
+
+
+// game engine components
+
+#include"BBS\game.h"
 
 #include"BBS\asset\effect\banner.h"
 
@@ -8,13 +12,23 @@
 
 #include"BBS\asset\button\all.h"
 
-#include"BBS\asset\text\all.h"
+#include"BBS\asset\text\color_text.h"
 
 #include"BBS\asset\particle_system\firecracker.h"
 
 #include"BBS\asset\bg\inf_scrolling_bg.h"
 
+#include"BBS\asset\effect\shadow.h"
+
+
+
+// SFML components
+
 #include<SFML\Audio.hpp>
+
+
+
+// standard c++ components
 
 #include<iostream>	// only for debugging
 
@@ -23,6 +37,10 @@
 #include<array>
 
 #include<vector>
+
+
+
+// game modules
 
 #include"constants.h"
 
@@ -37,6 +55,8 @@
 #include"score_board.h"
 
 #include"game_states/state_data.h"
+
+// game states
 
 #include"game_states/initial_state.h"
 

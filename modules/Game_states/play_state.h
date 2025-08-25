@@ -4,13 +4,13 @@ extern class game_over_state game_over;
 
 class play_state : public bb::BASE_STATE
 {
-	highest_score_type *ph_data;
+	highest_score_type* ph_data;	// pointer to hold the highest score data of initial state
 
-	game_data_type g_data;
+	game_data_type g_data;	// current game data score, level, time, goal
 
 
 
-	// the brickmap
+	// the brickmap (it is saved in a file when the game closes)
 
 	board_class board;
 
@@ -24,7 +24,7 @@ class play_state : public bb::BASE_STATE
 
 	// the score board
 
-	score_board_class score_board;
+	score_board_class score_board;	// to display score, level, goal and time
 
 
 
@@ -32,14 +32,14 @@ class play_state : public bb::BASE_STATE
 
 	/*
 		points to a brick in the grid, it is used to select a brick in
-		the grid for swapping
+		the grid for swapping using the keyboard
 	*/
 
 	int point;	// index of the brick pointed by pointer
 
 	bb::RoundedRectangleShape pointer;	// to draw the pointer on the screen
 
-	bool pointer_color;	// decide the pointer color
+	bool pointer_color;	// used to blink the pointer color
 
 
 
@@ -59,7 +59,7 @@ class play_state : public bb::BASE_STATE
 		used to create fade in/out effect
 	*/
 
-	bb::ScreenFade screen;	// creates the fade in and fade out effect
+	bb::ScreenFade screen;
 
 
 
@@ -89,19 +89,13 @@ class play_state : public bb::BASE_STATE
 
 
 
-	// interval timer
+	// interval timers
 
 	bb::INTERVAL_TIMER timer;	// decreases the timer of game data every second
 	
-	bb::INTERVAL_TIMER pointer_color_timer;	// to change the pointer color periodically, to make it blink
+	bb::INTERVAL_TIMER pointer_color_timer;	// changes the pointer color periodically, to make it blink
 
-	bb::INTERVAL_TIMER explo_timer;
-
-
-
-	// delay timer
-
-	bb::DELAY_TIMER after;
+	bb::INTERVAL_TIMER explo_timer;	// runs the explosion effect in a separate thread
 
 
 
@@ -111,25 +105,25 @@ public:
 
 	play_state() :
 		board(true),	// we save this board data
-		score_board(sf::Vector2f(24, 24)),
-		offset(sf::Vector2f(VIRTUAL_WIDTH - 272, 16)),
-		point(0),
+		score_board(sf::Vector2f(24, 24)),	// top left corner of score board
+		offset(sf::Vector2f(VIRTUAL_WIDTH - 272, 16)),	// top left corner of brickmap
+		point(0),	// pointing the first brick initially
 		pointer_color(false),
 		selected(-1),	// initializing the pointer and selecter
-		screen(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),
+		screen(sf::Vector2f(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)),	// size of screen fade effect rectangle
 		banner(
 			large_text,
-			sf::Vector2f(VIRTUAL_WIDTH, BRICK_HEIGHT * 1.5),
-			VIRTUAL_HEIGHT,
-			sf::Color(255, 255, 255),
-			sf::Color(95, 205, 228, 200)
+			sf::Vector2f(VIRTUAL_WIDTH, BRICK_HEIGHT * 1.5),	// size of banner
+			VIRTUAL_HEIGHT,					// fall height
+			sf::Color(255, 255, 255),		// banner text color
+			sf::Color(95, 205, 228, 200)	// banner color
 		),
 		pause(
 			medium_text,
 			"Pause (Esc)",
-			sf::Color(48, 96, 130),
-			sf::Color(99, 155, 255),
-			sf::Vector2f(24, VIRTUAL_HEIGHT - 24),
+			sf::Color(48, 96, 130),		// normal color
+			sf::Color(99, 155, 255),	// hover color
+			sf::Vector2f(24, VIRTUAL_HEIGHT - 24),	// bottom left corner coordinates
 			bb::BOTTOM_LEFT
 		)
 	{
@@ -184,13 +178,13 @@ public:
 
 	void init(highest_score_type* ph_data, bool new_game = false)
 	{
-		this->ph_data = ph_data;
+		this->ph_data = ph_data;	// gets the highest score data from initial state
 
 		// starting a new game
 
 		if (new_game)
 		{
-			reset();
+			reset();	// reset the play state
 		}
 	}
 
@@ -198,6 +192,9 @@ public:
 
 private:
 
+
+	// reset play state
+	// reset the game data, brickmap, place the pointer on the first brick, and vanish any selection
 
 	void reset()
 	{
@@ -221,6 +218,11 @@ private:
 	}
 
 
+	/*
+		initiate the level banner, after the banner is down start the game timer countdown and
+		pointer color blinking
+	*/
+
 	void level_banner()
 	{
 		banner.startAnimation("Level " + std::to_string(g_data.level), [this]()
@@ -240,7 +242,7 @@ private:
 					}
 				);
 
-				// pointer blinking
+				// also start pointer blinking
 
 				pointer_color_timer.start(0.5, [this](double dt)
 					{
@@ -263,7 +265,7 @@ private:
 
 		screen.startFadeIn([this]() {level_banner(); });
 
-		// start the explosion timer
+		// start the explosion timer, this timer only stops when the state exits
 
 		explo_timer.start(
 			1.0 / 120,
@@ -280,7 +282,7 @@ private:
 
 	void Update(double dt) override
 	{
-		// updating the button
+		// updating the button but the input is not used if some visual effects are being displayed
 
 		auto mpos = bb::INPUT.pointer();
 
@@ -341,7 +343,7 @@ private:
 
 			g_data.goal += g_data.goal * 1.25 + 200;	// increase goal
 
-			// display the level banner and start the game timer countdown and pointer color blinking
+			// display the level banner after that start the game timer countdown and pointer color blinking
 
 			level_banner();
 
@@ -367,10 +369,8 @@ private:
 				{
 					/*
 						after displaying the game over banner, start a fade out effect
-						the screen goes black slowly
+						the screen goes blood red slowly
 					*/
-
-					//screen.setColor(sf::Color::Black);
 
 					screen.setColor(sf::Color(138, 3, 3));
 
@@ -474,11 +474,13 @@ private:
 
 		auto pointM = mouse_on_brick(bb::INPUT.pointer().x, bb::INPUT.pointer().y);
 
-		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || (pointM != -1 && bb::INPUT.isPressedM(sf::Mouse::Button::Left)))
+		if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Space) || (pointM != -1 && bb::INPUT.isPressedM(sf::Mouse::Button::Left)))
 		{
 			int pointed;
 
-			if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter))
+			// determining which brick is pointed, using keyboard or mouse
+
+			if (bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Space))
 			{
 				// pointing a brick using keyboard
 
@@ -491,6 +493,8 @@ private:
 
 				pointed = pointM;	// use the brick under the mouse pointer
 			}
+
+			// found the pointed brick, now selecting/deselecting/swapping bricks
 
 			if (selected == -1)
 			{
@@ -537,11 +541,13 @@ private:
 					),
 					[this](double dt)
 					{
+						// after the swap is done, check for matches
+
 						calculate_match();
 					}
 				);
 
-				selected = -1;	// deselect the selected brick
+				selected = -1;	// deselect the selected brick after swapping
 
 				// play swapping sound
 
@@ -560,11 +566,15 @@ private:
 	}
 
 
+	// check if the mouse is on the brickmap
+
 	bool mouse_on_brickmap(int x, int y)
 	{
 		return bb::in_rng_open(offset.x, (float)x, offset.x + GRID_WIDTH * BRICK_WIDTH) && bb::in_rng_open(offset.y, (float)y, offset.y + GRID_HEIGHT * BRICK_HEIGHT);
 	}
 
+
+	// return the index of the brick under the mouse pointer, -1 if mouse is not on the brickmap
 
 	int mouse_on_brick(int x, int y)
 	{
@@ -600,15 +610,15 @@ private:
 			{
 				g_data.score += match.size() * 50;	// 10 points for each brick in the match
 
-				// adding explosion
+				// adding explosion for each brick in the match
 
 				for(const auto& brick : match)
 				{
 					auto pos = offset + brick.pos + sf::Vector2f(BRICK_WIDTH, BRICK_HEIGHT) / 2.0f;
 
-					// color of the explosion is determined by the brick color
+					// color of the explosion is determined by the brick color and some tweaking here
 
-					auto color = BRICK_COLOR_FLASHY[brick.color];
+					auto color = BRICK_COLOR_FLASHY[brick.color];	// flashy version of brick color
 
 					auto threshold = 130;
 
@@ -633,7 +643,7 @@ private:
 						color.b = std::min(255, int(color.b * factor));
 					}
 
-					explo.create(pos, color, 4800, 115);
+					explo.create(pos, color, 4800, 115);	// start the explosion effect
 				}
 			}
 
@@ -695,7 +705,7 @@ private:
 
 		pointer_color_timer.lock();
 
-		// render select rect color based on timer
+		// pointer color is decided based on the timer
 		
 		if (pointer_color)
 			pointer.setOutlineColor(sf::Color(217, 87, 99, 255));
@@ -717,7 +727,7 @@ private:
 
 		// the pause button
 
-		bb::textShadow(pause.get_text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+		bb::shadow(pause.get_text(), sf::Color(34, 32, 52), sf::Vector2f{ 1.5, 1.5 }, sf::Vector2f{ 1.5, 1 }, sf::Vector2f{ 0, 1.5 });
 
 		pause.Render();
 
@@ -734,6 +744,8 @@ private:
 
 	void Exit() override
 	{
+		// stopping all the interval timers and tweeners before exiting the state
+
 		tween.stop();
 
 		timer.stop();

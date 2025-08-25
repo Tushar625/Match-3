@@ -20,6 +20,8 @@
 
 
 
+// brick properties
+
 #define BRICK_WIDTH 32
 
 #define BRICK_HEIGHT 32
@@ -32,6 +34,8 @@
 
 
 
+// brickmap properties
+
 #define GRID_WIDTH 8
 
 #define GRID_HEIGHT 8
@@ -40,11 +44,11 @@
 
 enum TEXTURE_ENUM {MAIN, BACKGROUND, TEXTURE_COUNT};
 
-//enum SPRITE_ENUM {BLOCK, SPRITE_COUNT};
-
 enum SOUND_ENUM {POINTER, BUTTON, GAME_START, BRICK_SWAP, BRICK_BREAK, LEVEL_UP, GAME_OVER, NEW_RECORD, SOUND_COUNT};
 
 
+
+// real brick colors
 
 const std::array<sf::Color, 18> BRICK_COLOR{
     sf::Color(217, 160, 102),
@@ -66,6 +70,7 @@ const std::array<sf::Color, 18> BRICK_COLOR{
     sf::Color(118, 66, 138),
     sf::Color(89, 86, 82)
 };
+
 
 
 // flashy alternative for the brick colors, used for the explosion

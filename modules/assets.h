@@ -2,15 +2,19 @@
 
 
 
+// some assets to be used all over the game
+
+
+
 sf::Font font;
 
 sf::Text small_text, medium_text, large_text;
 
 std::vector<sf::Texture> texture{ TEXTURE_COUNT };
 
-std::vector<sf::Sprite> brick_sprite;
+std::vector<sf::Sprite> brick_sprite;	// list of all brick sprites
 
-sf::Sprite bg_sprite;
+sf::Sprite bg_sprite;	// sprite for infinite scrolling background
 
 std::vector<sf::SoundBuffer> sound_buffer{ SOUND_COUNT };
 
@@ -20,9 +24,15 @@ bb::STATE_MACHINE sm;
 
 
 
+/*
+	constructor of this class loads and initializes all the assets before
+	the game states are initialized
+
+	this is also the first piece of code executed in this game
+*/
+
 class ASSET_LOADER
 {
-	// all the assets are loaded before the game states are initialized
 
 public:
 
@@ -33,12 +43,18 @@ public:
 
 		
 
+		// loading the fonts
+
 		if (!font.loadFromFile("font/font.ttf"))
 		{
 			std::cout << "can't load font\n";
 		}
 
 		font.setSmooth(false);
+
+
+
+		// setting the texts
 
 		small_text.setFont(font);	small_text.setCharacterSize(SMALL_FONT_SIZE);
 
@@ -49,10 +65,6 @@ public:
 
 
 		// loading the textures
-
-		//texture[MAIN]
-
-		//sf::Ve
 
 		if (!texture[MAIN].loadFromFile("image/match3.png"))
 		{
@@ -66,7 +78,7 @@ public:
 
 
 
-		// creating the sprites
+		// setting the sprites
 
 		brick_sprite = bb::generateSpriteVector(texture[MAIN], BRICK_WIDTH, BRICK_HEIGHT);
 
@@ -74,7 +86,7 @@ public:
 
 		bg_sprite.setTexture(texture[BACKGROUND]);
 
-		// the part of the background texture we want to use
+		// the area of the background texture we want to display
 
 		bg_sprite.setTextureRect(sf::IntRect(20, 46, texture[BACKGROUND].getSize().x - 20, texture[BACKGROUND].getSize().y - 46));
 
@@ -122,6 +134,9 @@ public:
 			std::cout << "can't load new_record.mp3\n";
 		}
 
+
+
+		// opening the background music
 
 		if (!bg_music.openFromFile("sound/bg_sound.mp3"))
 		{

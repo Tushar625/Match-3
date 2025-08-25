@@ -33,8 +33,9 @@ public:
 		enter(
 			medium_text,
 			"Enter",
-			sf::Color(99, 155, 255),
-			sf::Color::Cyan,
+			sf::Color(99, 155, 255),	// normal color
+			sf::Color::Cyan,			// hover color
+			// bottom center coordinates of the button
 			sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 + ((10 + (MEDIUM_FONT_SIZE + 10) * 4) * 1.5) / 2 - 16),
 			bb::BOTTOM_CENTER
 		)
@@ -76,6 +77,8 @@ public:
 
 	void init(int score)
 	{
+		// setting score text
+
 		score_text.setString(std::to_string(score));
 
 		bb::textCenterOrigin(score_text);
@@ -87,6 +90,8 @@ public:
 
 	void Enter()	// initialze this state
 	{
+		// highest score state emarges from dark, the fade in effect
+
 		screen.setColor(sf::Color::White);
 
 		screen.startFadeIn();
@@ -96,6 +101,8 @@ public:
 
 	void Update(double dt)	// update this state
 	{
+		// updating the button but the input is not used if some visual effects are being displayed
+
 		auto mpos = bb::INPUT.pointer();
 
 		auto enter_button_clicked = enter.is_clicked(
@@ -107,8 +114,12 @@ public:
 
 		if (screen.xfinal())
 		{
+			// xfinal changes the game state, so we return after it's executed
+
 			return;
 		}
+
+		// ignoring inputs if some visual effects are being displayed
 
 		if (screen.isActive())
 		{
@@ -118,6 +129,8 @@ public:
 		if (enter_button_clicked || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
 			play_sound(BUTTON);
+
+			// fade out effect the screen goes black slowly
 
 			screen.setColor(sf::Color::Black);
 
@@ -144,6 +157,8 @@ public:
 
 	void Exit()		// destroy this state
 	{
+		// stopping all the threads before we exit this state
+
 		screen.stop();
 	}
 } highest_score;

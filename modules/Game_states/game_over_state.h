@@ -40,17 +40,18 @@ public:
 		enter(
 			medium_text,
 			"Enter",
-			sf::Color(99, 155, 255),
-			sf::Color::Cyan,
+			sf::Color(99, 155, 255),	// normal color
+			sf::Color::Cyan,			// hover color
+			// bottom center coordinates of the button
 			sf::Vector2f(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2 + ((10 + (MEDIUM_FONT_SIZE + 10) * 4) * 1.5) / 2 - 16),
 			bb::BOTTOM_CENTER
 		),
 		banner(
 			large_text,
-			sf::Vector2f(VIRTUAL_WIDTH, BRICK_HEIGHT * 1.5),
-			VIRTUAL_HEIGHT,
-			sf::Color(255, 255, 255),
-			sf::Color(95, 205, 228, 200)
+			sf::Vector2f(VIRTUAL_WIDTH, BRICK_HEIGHT * 1.5),	// banner size
+			VIRTUAL_HEIGHT,		// fall height
+			sf::Color(255, 255, 255),		// text color
+			sf::Color(95, 205, 228, 200)	// banner color
 		)
 	{
 		// rounded rectangle
@@ -114,12 +115,16 @@ public:
 
 	void Enter()	// initialze this state
 	{
+		// game over state emarges from blood red, the fade in effect
+
 		screen.setColor(sf::Color(138, 3, 3));
 
 		screen.startFadeIn([this]()
-			{ 
+			{
 				if (new_record)
 				{
+					// if new record then show banner animation
+
 					banner.setFallDuration(1);
 
 					banner.setPauseDuration(2);
@@ -153,6 +158,8 @@ public:
 	{
 		banner.xfinalUpdate(dt);
 
+		// updating the button but the input is not used if some visual effects are being displayed
+
 		auto mpos = bb::INPUT.pointer();
 
 		auto enter_button_clicked = enter.is_clicked(
@@ -164,8 +171,12 @@ public:
 
 		if (screen.xfinal())
 		{
+			// xfinal changes the game state, so we return after it's executed
+
 			return;
 		}
+
+		// ignoring inputs if some visual effects are being displayed
 
 		if (screen.isActive() || banner.isActive())
 		{
@@ -175,6 +186,8 @@ public:
 		if (enter_button_clicked || bb::INPUT.isPressed(sf::Keyboard::Scan::Enter) || bb::INPUT.isPressed(sf::Keyboard::Scan::Escape))
 		{
 			play_sound(BUTTON);
+
+			// fade out effect the screen goes black slowly
 
 			screen.setColor(sf::Color::Black);
 
@@ -198,7 +211,7 @@ public:
 
 		// adding shadow to banner text
 
-		bb::textShadow(banner.text(), { {1.5, 1.5}, {1.5, 1}, {0, 1.5} }, sf::Color(34, 32, 52));
+		bb::shadow(banner.text(), sf::Color(34, 32, 52), sf::Vector2f{ 1.5, 1.5 }, sf::Vector2f{ 1.5, 1 }, sf::Vector2f{ 0, 1.5 });
 
 		bb::WINDOW.draw(banner.text());
 
@@ -209,6 +222,8 @@ public:
 
 	void Exit()		// destroy this state
 	{
+		// stopping all the threads before we exit this state
+
 		screen.stop();
 
 		banner.stop();
